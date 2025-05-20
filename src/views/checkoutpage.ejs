@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout</title>
+  <style>
+    /* Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    nav {
+      background-color: #4CAF50;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 15px 30px;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    .nav-links a {
+      color: #f5f5f5;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .nav-links a:hover {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 110px auto 20px; /* Increased top margin to avoid nav overlap */
+      padding: 20px;
+    }
+    
+    /* Checkout Sections */
+    #cart-summary, #delivery-info {
+      border: 1px solid #ddd;
+      background-color: #fff;
+      padding: 20px;
+      margin: 20px auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 800px;
+    }
+    
+    /* Cart Items */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      margin: 10px 0;
+    }
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    .cart-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      margin-right: 15px;
+      border-radius: 8px;
+    }
+    .cart-item > div {
+      text-align: left;
+    }
+    .item-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .item-price {
+      color: #555;
+    }
+    
+    /* Input and Button Styles */
+    input, button {
+      font-size: 16px;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    input {
+      border: 1px solid #ddd;
+      background-color: #fff;
+      color: #333;
+    }
+    button {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      max-width: 800px;
+      margin: 20px auto;
+      display: block;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    
+    /* Total Section */
+    .total-section {
+      font-size: 1.2em;
+      padding: 15px 0;
+      border-top: 2px solid #eee;
+      margin-top: 15px;
+      text-align: right;
+    }
+    
+    /* Error Message */
+    .error-message {
+      color: #ff5722;
+      font-size: 1.1em;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #ffebee;
+      border-radius: 4px;
+      display: none;
+      max-width: 800px;
+      text-align: center;
+    }
+    
+    /* Loading Indicator */
+    .loading {
+      display: none;
+      margin: 20px auto;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: #fff;
+      padding: 20px 30px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .modal-content h2 {
+      margin-bottom: 15px;
+    }
+    .modal-button {
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 4px;
+      margin-top: 15px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .modal-button:hover {
+      background-color: #45a049;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+        margin-top: 100px;
+      }
+      #cart-summary, #delivery-info {
+        width: 95%;
+        padding: 15px;
+      }
+      .cart-item {
+        flex-direction: column;
+        text-align: center;
+      }
+      .cart-item img {
+        margin: 0 0 10px 0;
+      }
+      nav {
+        padding: 10px 15px;
+      }
+      .nav-links {
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/cart">Cart</a>
+      <a href="/orders">Orders</a>
+      <a href="#" id="logout-link">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2>Checkout Page</h2>
+
+    <div id="cart-summary">
+      <p><strong>Items in your cart</strong></p>
+      <div id="cart-items"></div>
+      <div class="total-section">
+        <p>Subtotal: ₹<span id="subtotal-amount">0</span></p>
+        <p>Delivery: ₹<span id="delivery-charge">50</span></p>
+        <p><strong>Total: ₹<span id="total-amount">0</span></strong></p>
+      </div>
+    </div>
+
+    <div id="delivery-info">
+      <label for="address">Delivery Address:</label>
+      <input type="text" id="address" placeholder="Enter your complete delivery address" required>
+    </div>
+
+    <button id="pay-button">Proceed to Payment</button>
+    <div id="loading" class="loading">Processing payment...</div>
+    <div id="error-message" class="error-message"></div>
+
+    <!-- Modal -->
+    <div id="success-modal" class="modal">
+      <div class="modal-content">
+        <h2>Payment Successful</h2>
+        <p>Your payment has been processed successfully and your order has been placed.</p>
+        <button class="modal-button" onclick="window.location.href = '/orders';">View Order Details</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+      let subtotal = 0;
+      const deliveryCharge = 50;
+      const cartItemsContainer = document.getElementById('cart-items');
+      const errorMessageElement = document.getElementById('error-message');
+      const payButton = document.getElementById('pay-button');
+      const loadingElement = document.getElementById('loading');
+
+      cartItemsContainer.innerHTML = '';
+
+      function showError(message) {
+        errorMessageElement.textContent = message;
+        errorMessageElement.style.display = 'block';
+        payButton.disabled = false;
+        loadingElement.style.display = 'none';
+      }
+
+      if (cartItems.length === 0) {
+        showError("Your cart is empty. Please add items before proceeding.");
+        payButton.disabled = true;
+        return;
+      }
+
+      try {
+        cartItems.forEach(item => {
+          if (!item.price || isNaN(item.price) || !item.quantity || isNaN(item.quantity)) {
+            throw new Error('Invalid cart item data');
+          }
+          subtotal += item.price * item.quantity;
+          cartItemsContainer.innerHTML += `    
+            <div class="cart-item">
+              <img src="${item.image || 'placeholder.jpg'}" alt="${item.name}">
+              <div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-price">₹${item.price} x ${item.quantity}</div>
+              </div>
+            </div>`;
+        });
+      } catch (error) {
+        showError("There was an error processing your cart. Please try again.");
+        console.error('Cart processing error:', error);
+        return;
+      }
+
+      document.getElementById('subtotal-amount').textContent = subtotal;
+      document.getElementById('delivery-charge').textContent = deliveryCharge;
+      document.getElementById('total-amount').textContent = subtotal + deliveryCharge;
+
+      document.getElementById('pay-button').onclick = async function () {
+        try {
+          payButton.disabled = true;
+          loadingElement.style.display = 'block';
+          errorMessageElement.style.display = 'none';
+
+          const token = localStorage.getItem('token');
+          if (!token) {
+            throw new Error('Please login to continue');
+          }
+
+          const address = document.getElementById('address').value.trim();
+          if (!address) {
+            throw new Error("Please provide a delivery address.");
+          }
+
+          const userResponse = await fetch('/api/users/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!userResponse.ok) throw new Error('Failed to authenticate user');
+
+          const userData = await userResponse.json();
+          if (!userData.user || !userData.user._id) {
+            throw new Error('Invalid user data received');
+          }
+
+          // Add delivery charge to total amount for payment
+          const totalAmount = subtotal + deliveryCharge;
+
+          const transactionResponse = await fetch('/api/orders/transaction', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ amount: totalAmount, userId: userData.user._id })
+          });
+          if (!transactionResponse.ok) {
+            const errorData = await transactionResponse.json();
+            throw new Error(errorData.message || 'Failed to create transaction');
+          }
+
+          const transactionData = await transactionResponse.json();
+
+          if (transactionData.success) {
+            const options = {
+              key: transactionData.key,
+              amount: transactionData.amount,
+              currency: transactionData.currency,
+              order_id: transactionData.orderId,
+              name: 'Green Garden Store',
+              description: 'Purchase from Green Garden',
+              handler: async function (razorpayResponse) {
+                try {
+                  const deliveryDate = new Date();
+                  deliveryDate.setDate(deliveryDate.getDate() + 3);
+
+                  const orderResponse = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({
+                      razorpayOrderId: razorpayResponse.razorpay_order_id,
+                      razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                      razorpaySignature: razorpayResponse.razorpay_signature,
+                      userId: userData.user._id,
+                      cartItems,
+                      deliveryDate,
+                      address
+                    })
+                  });
+
+                  if (!orderResponse.ok) {
+                    const errorData = await orderResponse.json();
+                    throw new Error(errorData.message || "Failed to place order");
+                  }
+
+                  const orderData = await orderResponse.json();
+                  if (orderData.success) {
+                    document.getElementById('success-modal').style.display = 'flex';
+                    localStorage.removeItem('cart');
+                  } else {
+                    throw new Error("Failed to place order");
+                  }
+                } catch (error) {
+                  showError(error.message || "Error processing order");
+                }
+              },
+              modal: {
+                ondismiss: function() {
+                  payButton.disabled = false;
+                  loadingElement.style.display = 'none';
+                }
+              },
+              theme: { color: "#4CAF50" }
+            };
+            const razorpay = new Razorpay(options);
+            razorpay.open();
+          }
+        } catch (error) {
+          showError(error.message || "Error processing payment");
+          console.error('Payment error:', error);
+
+          if (error.message === 'Please login to continue') {
+            window.location.href = '/login';
+          }
+        }
+      };
+    });
+  </script>
+</body>
+</html>

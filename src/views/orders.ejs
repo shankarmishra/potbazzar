@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        nav {
+            background-color: #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            color: #f5f5f5;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            margin: 80px auto 20px;
+            padding: 20px;
+            max-width: 1200px;
+        }
+
+        .order-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .order-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .order-item img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .order-details {
+            flex: 1;
+            text-align: left;
+        }
+
+        .product-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 1.1em;
+            color: #4CAF50;
+            margin: 5px 0;
+        }
+
+        h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            background-color: #e8f5e9;
+            color: #4CAF50;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .delivery-info {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        .error-message {
+            color: #ff0000;
+            background-color: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .total-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+            color: #4CAF50;
+        }
+
+        .delete-btn {
+            background-color: #ff3b3b;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #ff1a1a;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/cart">Cart</a>
+            <a href="/orders">My Orders</a>
+            <a href="/logout" id="logout-link">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>My Orders</h2>
+        <div id="orders-container">Loading orders...</div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login to view your orders');
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                const userResponse = await fetch('/api/users/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!userResponse.ok) {
+                    throw new Error('User authentication failed');
+                }
+
+                const userData = await userResponse.json();
+                const userId = userData.user._id;
+
+                const response = await fetch(`/api/orders/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch orders');
+                }
+
+                const data = await response.json();
+                const ordersContainer = document.getElementById('orders-container');
+
+                if (!data.success || !data.orders || !data.orders.length) {
+                    ordersContainer.innerHTML = "<p>No orders found.</p>";
+                    return;
+                }
+
+                ordersContainer.innerHTML = data.orders.map(order => {
+                    try {
+                        const orderTotal = order.items ? order.items.reduce((total, item) => {
+                            if (!item || !item.product) return total;
+                            return total + ((item.product.price || 0) * (item.quantity || 0));
+                        }, 0) : 0;
+
+                        return `
+                            <div class="order-container">
+                                <p><strong>Order ID:</strong> ${order._id || 'N/A'}</p>
+                                <p><strong>Order Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
+                                <div class="order-status">
+                                    Status: ${order.status || 'Order Placed'}
+                                </div>
+                                <div class="delivery-info">
+                                    <p><strong>Delivery Address:</strong> ${order.address || 'N/A'}</p>
+                                    <p><strong>Expected Delivery:</strong> ${order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : 'N/A'}</p>
+                                </div>
+                                ${order.items ? order.items.map(item => {
+                                    if (!item || !item.product) {
+                                        return `<div class="error-message">Product information unavailable</div>`;
+                                    }
+                                    return `
+                                        <div class="order-item">
+                                            <img src="${item.product.image_uri || '/images/default-image.jpg'}" 
+                                                 alt="${item.product.name || 'Product'}"
+                                                 onerror="this.src='/images/default-image.jpg'">
+                                            <div class="order-details">
+                                                <div class="product-name">${item.product.name || 'Product Name Unavailable'}</div>
+                                                <div class="product-price">₹${item.product.price || 0} per item</div>
+                                                <p>Quantity: ${item.quantity || 0}</p>
+                                                <p>Subtotal: ₹${(item.product.price || 0) * (item.quantity || 0)}</p>
+                                            </div>
+                                            <button class="delete-btn" data-order-id="${order._id}" data-item-id="${item._id}">Delete Item</button>
+                                        </div>
+                                    `;
+                                }).join('') : '<div class="error-message">No items found in this order</div>'}
+                                <div class="total-amount">Total Amount: ₹${orderTotal}</div>
+                            </div>
+                        `;
+                    } catch (orderError) {
+                        console.error("Error processing order:", orderError);
+                        return `<div class="error-message">Error displaying order information</div>`;
+                    }
+                }).join('');
+
+                // Add event listeners to delete buttons
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const orderId = e.target.getAttribute('data-order-id');
+                        const itemId = e.target.getAttribute('data-item-id');
+
+                        try {
+                            const deleteResponse = await fetch(`/api/orders/${orderId}/items/${itemId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (!deleteResponse.ok) {
+                                throw new Error('Failed to delete item');
+                            }
+
+                            alert('Item deleted successfully');
+                            window.location.reload();  // Reload to reflect changes
+                        } catch (error) {
+                            console.error('Error deleting item:', error);
+                            alert('Failed to delete item');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+                document.getElementById('orders-container').innerHTML = `
+                    <div class="error-message">
+                        <p>Failed to load orders. Please try refreshing the page or logging in again.</p>
+                    </div>`;
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        });
+    </script>
+</body>
+</html>

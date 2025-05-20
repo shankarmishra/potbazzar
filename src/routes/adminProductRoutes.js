@@ -1,0 +1,1 @@
+router.delete('/products/delete/:id', deleteProduct);
