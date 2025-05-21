@@ -284,6 +284,88 @@
       width: 200px;
       font-size: 1rem;
     }
+    .three-dots {
+      display: none;
+      cursor: pointer;
+      font-size: 2rem;
+      color: #fff;
+      margin-left: 10px;
+      z-index: 1201;
+      background: none;
+      border: none;
+      position: relative;
+    }
+    @media (max-width: 800px) {
+      .three-dots {
+        display: block !important;
+        position: absolute;
+        right: 16px;
+        top: 14px;
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: #fff;
+        z-index: 1201;
+        margin-left: 0;
+      }
+      .nav-links {
+        display: none !important;
+      }
+    }
+    .category-dropdown {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 80vw;
+      max-width: 320px;
+      height: 100vh;
+      background: #176b2c;
+      color: #fff;
+      z-index: 1200;
+      box-shadow: -2px 0 16px rgba(0,0,0,0.18);
+      padding: 40px 20px 20px 20px;
+      transition: right 0.3s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+      font-family: 'Poppins', Arial, sans-serif;
+    }
+    .category-dropdown.show {
+      display: block;
+      right: 0;
+    }
+    .category-dropdown a,
+    .category-dropdown strong {
+      display: block;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      margin: 18px 0 0 0;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .category-dropdown a {
+      font-weight: 400;
+      font-size: 1rem;
+      margin: 10px 0 0 18px;
+      color: #e0ffe0;
+      border-left: 2px solid #4caf50;
+      padding-left: 10px;
+      transition: color 0.2s;
+    }
+    .category-dropdown a:hover {
+      color: #4caf50;
+    }
+    .category-dropdown .close-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 1202;
+    }
 
     /* Zoom Modal */
     .zoom-modal {
@@ -351,16 +433,41 @@
         <a href="/">HOME</a>
         <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
         <a href="/#about">ABOUT</a>
+        <a href="/policy">POLICY</a>
+        <a href="/cart" style="background:#388e3c;color:#fff;">CART</a>
       </div>
       <input type="text" placeholder="Search products..." class="search-bar" onkeyup="searchProducts(this.value)">
+      <div class="three-dots" onclick="toggleCategoryDropdown()">☰</div>
     </nav>
+    <div class="category-dropdown" id="categoryDropdown">
+      <button class="close-btn" onclick="toggleCategoryDropdown()">&times;</button>
+      <a href="/">Home</a>
+      <a href="https://www.homegardennet.com/?m=1" target="_blank">Blog</a>
+      <a href="/#about">About</a>
+      <a href="/policy">Policy</a>
+      <a href="/cart">Cart</a>
+      <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
+        <% categories.forEach(category => { %>
+          <strong><%= category.name %></strong>
+          <% if (category.subcategories && category.subcategories.length > 0) { %>
+            <% category.subcategories.forEach(sub => { %>
+              <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&sub=<%= encodeURIComponent(sub.name) %>">
+                &nbsp;&nbsp;• <%= sub.name %>
+              </a>
+            <% }) %>
+          <% } %>
+        <% }) %>
+      <% } %>
+    </div>
   </header>
 
   <div class="container">
     <!-- Product Details Section -->
     <div class="product-details">
       <div class="product-image">
-        <img id="mainProductImage" src="<%= product.images[0] || '/images/default-image.jpg' %>" alt="<%= product.name %>" style="cursor:zoom-in;">
+        <a href="/api/products/productdetails?id=<%= product._id %>">
+          <img id="mainProductImage" src="<%= product.images[0] || '/images/default-image.jpg' %>" alt="<%= product.name %>" style="cursor:zoom-in;">
+        </a>
         <div class="thumbnail-row">
           <% product.images.forEach(function(img, idx) { %>
             <img class="thumbnail-img" src="<%= img %>" alt="Thumbnail <%= idx+1 %>" onclick="showMainImage('<%= img %>')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin:6px;cursor:pointer;border:2px solid #eee;">
@@ -696,6 +803,17 @@
     }
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeZoomModal();
+    });
+
+    function toggleCategoryDropdown() {
+      const dropdown = document.getElementById('categoryDropdown');
+      dropdown.classList.toggle('show');
+    }
+    window.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('categoryDropdown');
+      if (dropdown && dropdown.classList.contains('show') && !dropdown.contains(e.target) && !e.target.classList.contains('three-dots')) {
+        dropdown.classList.remove('show');
+      }
     });
   </script>
 </body>

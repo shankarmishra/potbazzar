@@ -1348,7 +1348,6 @@
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
   min-width: 180px;
   min-height: 220px;
-  box-shadow: 0 4px 18px rgba(52,152,219,0.09);
 }
 .best-selection-card:hover {
   background: #3498db;
@@ -1448,6 +1447,8 @@
         <a href="/">HOME</a>
         <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
         <a href="#about">ABOUT</a>
+        <a href="/policy">POLICY</a>
+        <a href="/cart">CART</a>
       </div>
       <div class="nav-icons">
         <input type="text" placeholder="Search..." class="search-bar" onkeyup="searchProducts(this.value)" />
@@ -1466,6 +1467,9 @@
       <button class="close-btn" onclick="toggleCategoryDropdown()">&times;</button>
       <a href="/">Home</a>
       <a href="https://www.homegardennet.com/?m=1" target="_blank">Blog</a>
+      <a href="#about">About</a>
+      <a href="/policy">Policy</a>
+      <a href="/cart">Cart</a>
       <% categories.forEach(category => { %>
         <strong><%= category.name %></strong>
         <% if (category.subcategories && category.subcategories.length > 0) { %>
@@ -1543,12 +1547,14 @@
     )
   %>">
               <div class="product-images">
-                <div class="product-slider">
-                  <% product.images.forEach((image, index) => { %>
-                    <img src="<%= image || '/images/default-image.jpg' %>" alt="<%= product.name %> Image <%= index + 1 %>" class="<%= index === 0 ? 'active' : '' %>" />
-                  <% }) %>
-                </div>
-              </div>
+  <a href="/api/products/productdetails?id=<%= product._id %>">
+    <div class="product-slider">
+      <% product.images.forEach((image, index) => { %>
+        <img src="<%= image || '/images/default-image.jpg' %>" alt="<%= product.name %> Image <%= index + 1 %>" class="<%= index === 0 ? 'active' : '' %>" />
+      <% }) %>
+    </div>
+  </a>
+</div>
               <!-- ya -->
               <h4><%= product.name %></h4>
               <p>₹<%= product.price.toFixed(2) %></p>
@@ -1620,9 +1626,14 @@
           <p><strong>Whatsapp Message:</strong> +91 9760653073 <br><span style="font-size:0.95em;color:#888;">(Do not call, only Whatsapp, 10AM to 6PM, Monday to Saturday)</span></p>
           <p><strong>Head Office:</strong> Firozabad (Uttar Pradesh)<br>Pin-283145</p>
         </div>
+        <div class="social-links" style="margin:18px 0;">
+          <a href="https://www.facebook.com/share/1ACfzA87VW/" target="_blank">Facebook</a>
+          <a href="https://youtube.com/@homegarden26?si=lZkW419jMM38KXeK" target="_blank">YouTube</a>
+          <a href="https://www.instagram.com/homegardenyt?utm_source=qr&igsh=NWtidWE4ZHpsbmh4" target="_blank">Instagram</a>
+        </div>
         <!-- Policy Text -->
         <p class="policy">
-          Read our <a href="/policy" style="color: #4CAF50; text-decoration: none;">Privacy Policy</a> 
+          Read our <a href="/policy" style="color: #4CAF50; text-decoration: none;">Privacy Policy and return policy</a> 
         </p>
       </div>
     </div>
