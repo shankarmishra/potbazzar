@@ -229,21 +229,23 @@
 
     .product-actions {
       display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 6px;
     }
 
     .product-actions a {
-      flex: 1;
-      padding: 8px;
-      font-size: 0.9rem;
+      flex: 1 1 0;
+      padding: 7px 0;
+      font-size: 0.97rem;
       text-align: center;
       border-radius: 5px;
       text-decoration: none;
+      background: #3498db;
       color: #fff;
-      background-color: #4CAF50;
-      transition: background-color 0.3s ease;
+      transition: background 0.2s;
+      min-width: 0;
+      white-space: nowrap;
     }
 
     .product-actions a:hover {
@@ -564,20 +566,29 @@
   border-radius: 8px;
   background: #f9f9f9;
 }
+.product-item h4 {
+  margin: 10px 0 4px 0;
+  color: #222;
+}
 .product-item p {
-  margin: 10px 0 6px 0;
-  font-size: 1rem;
+  margin: 0 0 6px 0;
   color: #3498db;
   font-weight: 600;
 }
+.product-category {
+  display: block;
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 8px;
+}
 .product-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 .product-actions a {
-  flex: 1;
+  flex: 1 1 0;
   padding: 7px 0;
   font-size: 0.97rem;
   text-align: center;
@@ -586,9 +597,11 @@
   background: #3498db;
   color: #fff;
   transition: background 0.2s;
+  min-width: 0;
+  white-space: nowrap;
 }
 .product-actions a:hover {
-  background: #217dbb;
+  background-color: #45a049;
 }
 .view-more-btn {
   margin: 18px auto 0 auto;
@@ -615,9 +628,25 @@
   .all-categories-bar { gap: 16px; }
 }
 @media (max-width: 600px) {
-  .category-box { grid-template-columns: 1fr; }
-  .category-bar-item { width: 90px; }
-  .category-square-img { width: 60px; height: 60px; }
+  .all-products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .all-products-grid .product-item:nth-child(n+9) {
+    display: none;
+  }
+  .product-item {
+    max-width: 100%;
+    min-width: 0;
+    padding: 6px 2px;
+    margin: 2px auto;
+    height: auto;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .product-item img {
+    height: 100px;
+  }
 }
     
     /* Responsive Styles */
@@ -987,10 +1016,47 @@
     }
     .all-products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 28px;
       justify-content: center;
     }
+    @media (max-width: 1100px) {
+  .all-products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+}
+@media (max-width: 800px) {
+  .all-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  /* Show only 8 products on mobile */
+  .all-products-grid .product-item:nth-child(n+9) {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .all-products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .all-products-grid .product-item:nth-child(n+9) {
+    display: none;
+  }
+  .product-item {
+    max-width: 100%;
+    min-width: 0;
+    padding: 6px 2px;
+    margin: 2px auto;
+    height: auto;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .product-item img {
+    height: 100px;
+  }
+}
     .product-item img {
       width: 100%;
       height: 120px;
@@ -1015,12 +1081,12 @@
     }
     .product-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       justify-content: center;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .product-actions a {
-      flex: 1;
+      flex: 1 1 0;
       padding: 7px 0;
       font-size: 0.97rem;
       text-align: center;
@@ -1029,9 +1095,11 @@
       background: #3498db;
       color: #fff;
       transition: background 0.2s;
+      min-width: 0;
+      white-space: nowrap;
     }
     .product-actions a:hover {
-      background: #217dbb;
+      background-color: #45a049;
     }
 
     /* Product Filters */
@@ -1222,7 +1290,7 @@
 
 .best-selection {
   background: #fff;
-  padding: 36px 0 24px 0;
+  padding: 0px 0 24px 0;
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
 }
@@ -1314,14 +1382,17 @@
 /* 3 columns on phone for all-products-grid */
 @media (max-width: 600px) {
   .all-products-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+    padding: 0 4px;
   }
-  .product-item {
-    min-width: 0;
-    max-width: 100%;
-    padding: 8px;
-    height: auto;
+  .all-products-grid .product-item:nth-child(n+9) {
+    display: none;
+  }
+}
+@media (max-width: 800px) {
+  .all-products-grid .product-item:nth-child(n+9) {
+    display: none;
   }
 }
   </style>
@@ -1331,6 +1402,7 @@
     <nav>
       <img src="/static/logos.png" alt="Plant Store Logo" class="logo" />
       <div class="nav-links">
+        <a href="/">HOME</a>
         <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
         <a href="#about">ABOUT</a>
       </div>
@@ -1349,6 +1421,8 @@
     <div class="profile-dropdown" id="profileDropdown"></div>
     <div class="category-dropdown" id="categoryDropdown">
       <button class="close-btn" onclick="toggleCategoryDropdown()">&times;</button>
+      <a href="/">Home</a>
+      <a href="https://www.homegardennet.com/?m=1" target="_blank">Blog</a>
       <% categories.forEach(category => { %>
         <strong><%= category.name %></strong>
         <% if (category.subcategories && category.subcategories.length > 0) { %>
@@ -1474,9 +1548,11 @@
             )
           %>">
           <img src="<%= product.images[0] || '/images/default-image.jpg' %>" alt="<%= product.name %>" />
+          <span class="product-category" style="color:#888;font-size:0.95rem;margin-bottom:4px;display:block;">
+        <%= product.category?.name || 'Category' %>
+      </span>
           <h4><%= product.name %></h4>
           <p>₹<%= product.price.toFixed(2) %></p>
-          <span class="product-category"><%= product.category?.name %></span>
           <div class="product-actions">
             <a href="/api/products/productdetails?id=<%= product._id %>">View</a>
             <a href="javascript:void(0)" onclick="addToCart('<%= product._id %>', '<%= product.name %>', '<%= product.price %>', '<%= product.images[0] %>', '<%= product.description %>')">Add to Cart</a>

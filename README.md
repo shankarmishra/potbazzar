@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SmartKart Backend
 
 SmartKart Backend is a Node.js and Express-based backend application for an e-commerce platform that sells plants, garden accessories, and seeds. This project includes user authentication, product management, order processing, and an admin panel for managing the store.
@@ -221,3 +222,6 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## License
 
 This project is licensed under the MIT License.
+=======
+# potbazzar
+>>>>>>> 29d4a6e393e1919816e891b44add38fe5dc0b560
