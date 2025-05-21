@@ -15,7 +15,7 @@
     }
     .container {
       max-width: 1200px;
-      margin: 24px auto;
+      margin: 80px auto 24px;
       padding: 24px;
       background: #fff;
       border-radius: 12px;
@@ -247,31 +247,42 @@
       display: none;
     }
 
-    /* Responsive */
-    @media (max-width: 900px) {
-      .recommended-grid { grid-template-columns: repeat(2, 1fr); }
-      .product-details { flex-direction: column; }
+    /* Header */
+    header {
+      background-color: #4CAF50;
+      padding: 10px 20px;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
     }
-    @media (max-width: 600px) {
-      .reviews { margin: 16px 0; }
-      .review-item { margin-bottom: 10px; }
-      .review-form textarea, .review-form input[type="text"] {
-        font-size: 0.97rem;
-        padding: 8px;
-      }
-      .review-form button {
-        font-size: 0.97rem;
-        padding: 8px 16px;
-      }
-      .product-actions {
-        flex-direction: column;
-        gap: 10px;
-      }
-      .product-actions button {
-        width: 100%;
-        font-size: 1.05rem;
-        padding: 12px 0;
-      }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    .search-bar {
+      padding: 6px 10px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      width: 200px;
+      font-size: 1rem;
     }
 
     /* Zoom Modal */
@@ -293,10 +304,58 @@
     .zoom-modal.active {
       display: flex;
     }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .recommended-grid { grid-template-columns: repeat(2, 1fr); }
+      .product-details { flex-direction: column; }
+    }
+    @media (max-width: 600px) {
+      .container {
+        margin: 70px 10px 20px;
+        padding: 16px;
+      }
+      .reviews { margin: 16px 0; }
+      .review-item { margin-bottom: 10px; }
+      .review-form textarea, .review-form input[type="text"] {
+        font-size: 0.97rem;
+        padding: 8px;
+      }
+      .review-form button {
+        font-size: 0.97rem;
+        padding: 8px 16px;
+      }
+      .product-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .product-actions button {
+        width: 100%;
+        font-size: 1.05rem;
+        padding: 12px 0;
+      }
+      .nav-links {
+        display: none;
+      }
+      .search-bar {
+        width: 150px;
+      }
+    }
   </style>
 </head>
 <body>
 <% if (typeof reviewStats === 'undefined') { reviewStats = { avgRating: 0, totalRatings: 0, totalReviews: 0, ratingCounts: {1:0,2:0,3:0,4:0,5:0}, aspects: {Camera:0,Battery:0,Display:0,Value:0} }; } %>
+  <header>
+    <nav>
+      <div class="nav-links">
+        <a href="/">HOME</a>
+        <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
+        <a href="/#about">ABOUT</a>
+      </div>
+      <input type="text" placeholder="Search products..." class="search-bar" onkeyup="searchProducts(this.value)">
+    </nav>
+  </header>
+
   <div class="container">
     <!-- Product Details Section -->
     <div class="product-details">
@@ -455,7 +514,15 @@
 
   <!-- Scripts -->
   <script>
-    // Product actions
+    function searchProducts(searchTerm) {
+      searchTerm = searchTerm.trim().toLowerCase();
+      const products = document.querySelectorAll('.recommended-products .product-item');
+      products.forEach(product => {
+        const name = product.querySelector('strong').textContent.toLowerCase();
+        product.style.display = name.includes(searchTerm) ? '' : 'none';
+      });
+    }
+
     function addToCart(productId, productName, productPrice, productImage, productDescription) {
       if (!localStorage.getItem('token')) {
         document.getElementById('loginModal').style.display = 'flex';
@@ -476,7 +543,6 @@
         });
       }
       localStorage.setItem('cart', JSON.stringify(cart));
-      // Show popup
       const popup = document.getElementById('cartPopup');
       popup.style.display = 'block';
       popup.style.opacity = 1;
@@ -491,7 +557,6 @@
         document.getElementById('loginModal').style.display = 'flex';
         return;
       }
-      // Overwrite cart with only this product
       const item = {
         id: productId,
         name: productName,
@@ -512,14 +577,13 @@
           body: JSON.stringify({ reviewId })
         })
         .then(res => res.json())
-        .then ( data => {
+        .then(data => {
           if (data.success) location.reload();
           else alert('Could not delete review.');
         });
       }
     }
 
-    // Load more reviews
     let reviewPage = 1;
     function loadMoreReviews() {
       reviewPage++;
@@ -554,27 +618,23 @@
         });
     }
 
-    // Store authentication token (after login)
     function storeAuthToken(response) {
       if (response && response.token) {
         localStorage.setItem('token', response.token);
       }
     }
 
-    // Review form submission
     document.querySelector('.review-form form').addEventListener('submit', function(e) {
       e.preventDefault();
       const errorDiv = document.getElementById('reviewError');
       errorDiv.style.display = 'none';
       errorDiv.textContent = '';
 
-      // Check if user is logged in (token in localStorage)
       if (!localStorage.getItem('token')) {
         document.getElementById('loginModal').style.display = 'flex';
         return;
       }
 
-      // Client-side validation
       const productId = this.productId.value;
       const title = this.title.value.trim();
       const text = this.text.value.trim();
@@ -623,12 +683,10 @@
       });
     });
 
-    // Switch main image
     function showMainImage(src) {
       document.getElementById('mainProductImage').src = src;
     }
 
-    // Zoom modal
     document.getElementById('mainProductImage').onclick = function() {
       document.getElementById('zoomedImage').src = this.src;
       document.getElementById('zoomModal').classList.add('active');
@@ -636,7 +694,6 @@
     function closeZoomModal() {
       document.getElementById('zoomModal').classList.remove('active');
     }
-    // Optional: close modal on ESC
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeZoomModal();
     });

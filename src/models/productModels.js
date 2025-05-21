@@ -36,7 +36,9 @@ const productSchema = new mongoose.Schema({
     required: true 
   }
 }, {
-  timestamps: true  // Automatically manages createdAt and updatedAt
+  timestamps: true,  // Automatically manages createdAt and updatedAt
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 // Virtual for checking if product is in stock

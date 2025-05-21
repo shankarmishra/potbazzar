@@ -14,53 +14,45 @@
             color: #333;
         }
 
-        nav {
+        header {
             background-color: #4CAF50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
+            padding: 10px 20px;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
-            box-sizing: border-box;
         }
-
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .nav-links {
             display: flex;
             gap: 20px;
-            color: #f5f5f5;
+            align-items: center;
         }
-
         .nav-links a {
-            color: white;
+            color: #fff;
             text-decoration: none;
             font-weight: 500;
             padding: 5px 10px;
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-
         .nav-links a:hover {
-            background-color: rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.3);
         }
-
-        .cart-icon, .profile-icon {
-            width: 30px;
-            height: 30px;
-            filter: brightness(0) invert(1);
-        }
-
         .search-bar {
-            padding: 8px 15px;
+            padding: 6px 10px;
             border-radius: 20px;
             border: 1px solid #ddd;
             width: 200px;
+            font-size: 1rem;
         }
 
         .cart-items {
-            margin: 100px auto 20px;
+            margin: 80px auto 20px;
             padding: 20px;
             background-color: #ffffff;
             border-radius: 10px;
@@ -141,6 +133,16 @@
             background-color: #b71c1c;
         }
 
+        .stock-error {
+            color: white;
+            background-color: #e53935;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
         .total-section {
             background: #f1f8e9;
             border-radius: 10px;
@@ -190,80 +192,121 @@
             background-color: #388e3c;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 900px) {
             .cart-items {
-                width: 99%;
-                margin-top: 80px;
-                padding: 10px;
+                width: 95%;
             }
-
             .total-section, .cart-actions {
-                max-width: 99vw;
+                max-width: 95%;
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
             .cart-items {
                 width: 100%;
-                margin-top: 60px;
-                padding: 4px;
+                margin: 70px 10px 20px;
+                padding: 10px;
                 border-radius: 0;
             }
-
             .cart-item {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
                 padding: 10px 4px;
             }
-
             .cart-item img {
                 margin: 0 0 8px 0;
             }
-
             .cart-actions {
                 flex-direction: column;
                 gap: 8px;
                 width: 100%;
             }
-
             .total-section {
                 padding: 12px 8px;
                 font-size: 1em;
+            }
+            .nav-links {
+                display: none;
+            }
+            .search-bar {
+                width: 150px;
             }
         }
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+            <div class="nav-links">
+                <a href="/">HOME</a>
+                <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
+                <a href="/#about">ABOUT</a>
+            </div>
+            <input type="text" placeholder="Search cart..." class="search-bar" onkeyup="searchProducts(this.value)">
+        </nav>
+    </header>
+
     <div class="cart-items">
         <h2>Your Cart</h2>
-
-        <!-- Dynamic Cart Items -->
+        <div id="stock-error" class="stock-error"></div>
         <div id="cart-items-container"></div>
-
-        <!-- Total Section -->
         <div class="total-section">
             <p>Subtotal: ₹<span id="subtotal-price">0.00</span></p>
             <p>Delivery: ₹<span id="delivery-charge">50.00</span></p>
             <p><strong>Total: ₹<span id="total-price">0.00</span></strong></p>
         </div>
-
-        <!-- Cart Actions -->
-        <div class="cart-actions"></div>
+        <div class="cart-actions">
             <button onclick="proceedToCheckout()">Proceed to Checkout</button>
             <button onclick="emptyCart()">Empty Cart</button>
         </div>
     </div>
 
     <script>
-        // Load cart items from localStorage
-        function loadCart() {
+        async function fetchProductStock(productId) {
+            try {
+                const response = await fetch(`/api/products/product/stock/${productId}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch stock');
+                const data = await response.json();
+                if (typeof data.stock !== 'number' || isNaN(data.stock)) throw new Error('Invalid stock data');
+                return data.stock;
+            } catch (error) {
+                console.error('Error fetching stock:', error);
+                showStockError('Failed to fetch stock for some items. Please try again later.');
+                // Return -1 to indicate error (treat as out of stock)
+                return -1;
+            }
+        }
+
+        function showStockError(msg) {
+            const err = document.getElementById('stock-error');
+            err.textContent = msg;
+            err.style.display = 'block';
+            setTimeout(() => {
+                err.style.display = 'none';
+                err.textContent = '';
+            }, 3000);
+        }
+
+        function searchProducts(searchTerm) {
+            searchTerm = searchTerm.trim().toLowerCase();
+            const items = document.querySelectorAll('.cart-item');
+            items.forEach(item => {
+                const name = item.querySelector('.cart-item-info strong').textContent.toLowerCase();
+                item.style.display = name.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        async function loadCart() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const cartItemsContainer = document.getElementById('cart-items-container');
             let subtotal = 0;
-            const deliveryCharge = 50;
+            const deliveryCharge = cart.length ? 50 : 0;
 
-            // Clear previous items
             cartItemsContainer.innerHTML = '';
 
             if (cart.length === 0) {
@@ -272,19 +315,37 @@
                 document.getElementById('delivery-charge').textContent = '0.00';
                 document.getElementById('total-price').textContent = '0.00';
             } else {
-                cart.forEach(item => {
+                for (const item of cart) {
+                    // Fetch latest stock from backend
+                    const latestStock = await fetchProductStock(item.id);
+                    item.stock = (typeof latestStock === 'number' && latestStock >= 0) ? latestStock : 0;
+                    item.fetchFailed = latestStock === -1;
+
+                    // Adjust quantity if it exceeds stock or stock fetch failed
+                    if (item.quantity > item.stock) {
+                        item.quantity = item.stock;
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        showStockError(`Adjusted quantity for ${item.name} to available stock of ${item.stock}.`);
+                    }
+
                     subtotal += item.price * item.quantity;
 
                     const cartItem = document.createElement('div');
                     cartItem.classList.add('cart-item');
+
+                    const fetchFailed = latestStock === -1;
+                    const outOfStock = !fetchFailed && (item.stock === 0);
 
                     cartItem.innerHTML = `
                         <img src="${item.image || 'https://source.unsplash.com/100x100/?plant'}" alt="${item.name}">
                         <div class="cart-item-info">
                             <p><strong>${item.name}</strong></p>
                             <p>₹${item.price.toFixed(2)}</p>
-                            <input type="number" min="1" class="quantity-input" value="${item.quantity}" onchange="updateQuantity('${item.id}', this.value)">
-                            <p>Subtotal: ₹${(item.price * item.quantity).toFixed(2)}</p>
+                            <input type="number" min="1" max="${item.stock}" class="quantity-input" value="${item.quantity}" 
+                                onchange="updateQuantity('${item.id}', this.value, ${item.stock})" ${(outOfStock || fetchFailed) ? 'disabled' : ''}>
+                            <p style="color:#e53935;font-size:0.95em;">
+                                ${fetchFailed ? 'Error fetching stock' : (outOfStock ? 'Out of Stock' : 'Stock: ' + item.stock)}
+                            </p>
                         </div>
                         <div class="cart-item-description">
                             <p>${item.description || 'No description available'}</p>
@@ -293,7 +354,7 @@
                     `;
 
                     cartItemsContainer.appendChild(cartItem);
-                });
+                }
 
                 document.getElementById('subtotal-price').textContent = subtotal.toFixed(2);
                 document.getElementById('delivery-charge').textContent = deliveryCharge.toFixed(2);
@@ -301,30 +362,29 @@
             }
         }
 
-        // Update quantity
-        function updateQuantity(id, newQuantity) {
+        async function updateQuantity(id, newQuantity, stock) {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const item = cart.find(item => item.id === id);
-            
+
             if (item) {
-                // Ensure quantity is at least 1
+                // Fetch latest stock to ensure accuracy
+                const latestStock = await fetchProductStock(id);
+                item.stock = (typeof latestStock === 'number' && latestStock >= 0) ? latestStock : 0;
+                stock = item.stock;
+
                 const quantity = Math.max(1, parseInt(newQuantity));
-                item.quantity = quantity;
+                if (quantity > stock) {
+                    showStockError(`Cannot exceed available stock of ${stock}!`);
+                    item.quantity = stock;
+                } else {
+                    item.quantity = quantity;
+                }
                 localStorage.setItem('cart', JSON.stringify(cart));
-                loadCart(); // Reload cart to update totals
+                loadCart();
             }
         }
 
-        // Remove item from cart
-        function removeItem(id) {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(item => item.id !== id);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            loadCart();
-        }
-
-        // Proceed to checkout
-        function proceedToCheckout() {
+        async function proceedToCheckout() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             if (!cart.length) {
                 alert('Your cart is empty. Please add items to your cart before proceeding to checkout.');
@@ -335,23 +395,34 @@
                 window.location.href = '/login';
                 return;
             }
+            // Recheck stock before checkout
+            for (const item of cart) {
+                const latestStock = await fetchProductStock(item.id);
+                if (typeof latestStock !== 'number' || latestStock < 1 || item.quantity > latestStock) {
+                    showStockError(`Cannot proceed: ${item.name} is out of stock or stock unavailable!`);
+                    item.stock = latestStock > 0 ? latestStock : 0;
+                    item.quantity = Math.min(item.quantity, item.stock);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    loadCart();
+                    return;
+                }
+            }
             window.location.href = '/checkout';
         }
 
-        // Check if user is logged in
-        function isUserLoggedIn() {
-            return localStorage.getItem('token') !== null;
+        function removeItem(id) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.filter(item => item.id !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCart();
         }
 
-        // Empty cart
         function emptyCart() {
             localStorage.removeItem('cart');
             loadCart();
         }
 
-        // Initial load
         loadCart();
     </script>
-
 </body>
 </html>
