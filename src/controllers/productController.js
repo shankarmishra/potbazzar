@@ -5,54 +5,64 @@ import Subcategory from "../models/Subcategorymodel.js";
 import path from "path";
 import mongoose from 'mongoose';
 
-// Fetch products by category or subcategory
-const getProducts = async (req, res) => {
+
+
+export const getProducts = async (req, res) => {
   const { category, sub } = req.query;
   try {
-    const query = {};
+    // Always fetch categories for navbar/categorybar
+    const categories = await Category.find().lean();
+    const user = req.user || res.locals.user || null;
 
-    // Find category by name and use its _id
+    let query = {};
     let categoryDoc = null;
+    let subCategoryDoc = null;
+    let categoryName = '';
+    let subCategoryName = '';
+    let categoryDescription = '';
+
+    // Find category by name (case-insensitive)
     if (category) {
       categoryDoc = await Category.findOne({ name: { $regex: new RegExp('^' + category + '$', 'i') } });
       if (categoryDoc) {
         query.category = categoryDoc._id;
-      } else {
-        return res.render('category', {
-          categoryName: category,
-          subCategoryName: sub,
-          categoryDescription: '',
-          products: []
-        });
+        categoryName = categoryDoc.name;
+        categoryDescription = categoryDoc.description || '';
       }
     }
 
-    // Find subcategory by name and use its _id
+    // Find subcategory by name (case-insensitive)
     if (sub) {
-      const subDoc = await Subcategory.findOne({ name: { $regex: new RegExp('^' + sub + '$', 'i') } });
-      if (subDoc) {
-        query.subcategory = subDoc._id;
-      } else {
-        return res.render('category', {
-          categoryName: category,
-          subCategoryName: sub,
-          categoryDescription: '',
-          products: []
-        });
+      subCategoryDoc = await Subcategory.findOne({ name: { $regex: new RegExp('^' + sub + '$', 'i') } });
+      if (subCategoryDoc) {
+        query.subcategory = subCategoryDoc._id;
+        subCategoryName = subCategoryDoc.name;
       }
     }
 
-    const products = await Product.find(query);
+    const products = await Product.find(query).lean();
 
     res.render('category', {
-      categoryName: category,
-      subCategoryName: sub,
-      categoryDescription: categoryDoc ? categoryDoc.description : '',
-      products
+      user,
+      categories,
+      products,
+      categoryName,
+      subCategoryName,
+      categoryDescription
     });
   } catch (error) {
-    console.error('Error fetching products by category:', error);
-    res.status(500).send('Server Error');
+    console.error('Error fetching products:', error);
+    // Always pass categories even on error
+    const categories = await Category.find().lean();
+    res.render('category', {
+      user: req.user || res.locals.user || null,
+      categories,
+      products: [],
+      categoryName: '',
+      subCategoryName: '',
+      categoryDescription: '',
+      error: 'Error fetching products.'
+    });
   }
 };
 
@@ -129,12 +139,27 @@ const getProductDetails = async (req, res) => {
 
     const reviewStats = { avgRating, totalRatings, totalReviews: totalRatings, ratingCounts, aspects };
 
+    // Fetch all categories and subcategories for the menu
+    const categories = await Category.find().lean();
+    const subcategories = await Subcategory.find().lean();
+
+    // Attach subcategories to their categories
+    const subMap = {};
+    subcategories.forEach(sub => {
+      if (!subMap[sub.category]) subMap[sub.category] = [];
+      subMap[sub.category].push(sub);
+    });
+    categories.forEach(cat => {
+      cat.subcategories = subMap[cat._id] || [];
+    });
+
     res.render('productdetails', {
       product,
       recommendedProducts,
       reviews,
       user: req.user,
-      reviewStats
+      reviewStats,
+      categories // <-- now categories is defined for your EJS!
     });
   } catch (error) {
     console.error('Error fetching product details:', error);
@@ -337,7 +362,12 @@ const showHomePage = async (req, res) => {
       cat.products = products.filter(p => p.category && String(p.category._id) === String(cat._id));
     });
 
-    res.render('home', { categories, products });
+    // Pass user to the view for login check (from session or res.locals)
+    res.render('home', { 
+      categories, 
+      products, 
+      user: req.user || res.locals.user || null // <-- add this line
+    });
   } catch (error) {
     console.error('Error loading home page:', error);
     res.status(500).render('error', { message: 'Server Error' });
@@ -345,7 +375,6 @@ const showHomePage = async (req, res) => {
 };
 
 export {
-  getProducts,
   createProduct,
   getProductDetails,
   submitReview,

@@ -133,6 +133,14 @@
             margin-top: 15px;
             color: #4CAF50;
         }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +188,41 @@
                 }
             } catch (error) {
                 document.getElementById('message').textContent = "An error occurred. Please try again.";
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = 'Logging in...';
+            messageEl.className = '';
+
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageEl.textContent = 'Login successful! Redirecting...';
+                    messageEl.className = 'success';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
+                } else {
+                    messageEl.textContent = result.message || 'Login failed.';
+                    messageEl.className = 'error';
+                }
+            } catch (error) {
+                messageEl.textContent = 'An error occurred. Please try again.';
+                messageEl.className = 'error';
             }
         });
     </script>

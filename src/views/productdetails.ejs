@@ -55,6 +55,11 @@
       color: #ff5722;
       margin: 10px 0;
     }
+    .product-stock {
+      font-size: 1.1em;
+      color: #388e3c;
+      margin: 8px 0;
+    }
     .product-actions {
       display: flex;
       gap: 12px;
@@ -97,7 +102,7 @@
       background: #fafafa;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
-      padding: 16px;
+      padding: 6px;
       text-align: center;
       transition: box-shadow 0.2s;
       display: flex;
@@ -169,28 +174,6 @@
       accent-color: #43a047;
       margin: 0 6px;
     }
-    .aspect-summary {
-      display: flex;
-      gap: 24px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .aspect-circle {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .aspect-circle svg {
-      width: 48px;
-      height: 48px;
-      display: block;
-    }
-    .aspect-label {
-      font-size: 0.95rem;
-      color: #333;
-      margin-top: 2px;
-    }
 
     /* Reviews */
     .reviews { margin: 32px 0; }
@@ -256,33 +239,32 @@
       top: 0;
       z-index: 1000;
     }
-    nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-    .nav-links a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-    }
-    .nav-links a:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-    }
+   
+   
     .search-bar {
       padding: 6px 10px;
       border-radius: 20px;
       border: 1px solid #ddd;
       width: 200px;
       font-size: 1rem;
+    }
+    /* --- CATEGORY BAR: Always show on desktop, hide on mobile --- */
+    
+    @media (max-width: 800px) {
+      .all-categories-bar {
+        display: none !important;
+      }
+      .three-dots {
+        display: block !important;
+      }
+    }
+    @media (min-width: 801px) {
+      .all-categories-bar {
+        display: flex !important;
+      }
+      .three-dots {
+        display: none !important;
+      }
     }
     .three-dots {
       display: none;
@@ -294,23 +276,6 @@
       background: none;
       border: none;
       position: relative;
-    }
-    @media (max-width: 800px) {
-      .three-dots {
-        display: block !important;
-        position: absolute;
-        right: 16px;
-        top: 14px;
-        background: none;
-        border: none;
-        font-size: 2rem;
-        color: #fff;
-        z-index: 1201;
-        margin-left: 0;
-      }
-      .nav-links {
-        display: none !important;
-      }
     }
     .category-dropdown {
       display: none;
@@ -343,18 +308,7 @@
       font-weight: 600;
       letter-spacing: 0.5px;
     }
-    .category-dropdown a {
-      font-weight: 400;
-      font-size: 1rem;
-      margin: 10px 0 0 18px;
-      color: #e0ffe0;
-      border-left: 2px solid #4caf50;
-      padding-left: 10px;
-      transition: color 0.2s;
-    }
-    .category-dropdown a:hover {
-      color: #4caf50;
-    }
+    
     .category-dropdown .close-btn {
       position: absolute;
       top: 18px;
@@ -423,51 +377,25 @@
         width: 150px;
       }
     }
+   
+
   </style>
 </head>
 <body>
-<% if (typeof reviewStats === 'undefined') { reviewStats = { avgRating: 0, totalRatings: 0, totalReviews: 0, ratingCounts: {1:0,2:0,3:0,4:0,5:0}, aspects: {Camera:0,Battery:0,Display:0,Value:0} }; } %>
-  <header>
-    <nav>
-      <div class="nav-links">
-        <a href="/">HOME</a>
-        <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
-        <a href="/#about">ABOUT</a>
-        <a href="/policy">POLICY</a>
-        <a href="/cart" style="background:#388e3c;color:#fff;">CART</a>
-      </div>
-      <input type="text" placeholder="Search products..." class="search-bar" onkeyup="searchProducts(this.value)">
-      <div class="three-dots" onclick="toggleCategoryDropdown()">☰</div>
-    </nav>
-    <div class="category-dropdown" id="categoryDropdown">
-      <button class="close-btn" onclick="toggleCategoryDropdown()">&times;</button>
-      <a href="/">Home</a>
-      <a href="https://www.homegardennet.com/?m=1" target="_blank">Blog</a>
-      <a href="/#about">About</a>
-      <a href="/policy">Policy</a>
-      <a href="/cart">Cart</a>
-      <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
-        <% categories.forEach(category => { %>
-          <strong><%= category.name %></strong>
-          <% if (category.subcategories && category.subcategories.length > 0) { %>
-            <% category.subcategories.forEach(sub => { %>
-              <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&sub=<%= encodeURIComponent(sub.name) %>">
-                &nbsp;&nbsp;• <%= sub.name %>
-              </a>
-            <% }) %>
-          <% } %>
-        <% }) %>
-      <% } %>
-    </div>
-  </header>
+  <%- include('pagecomponent/navbar', { user: user, categories: categories }) %>
+  <%- include('pagecomponent/caregorybar', { categories: categories }) %>
 
   <div class="container">
     <!-- Product Details Section -->
     <div class="product-details">
       <div class="product-image">
-        <a href="/api/products/productdetails?id=<%= product._id %>">
-          <img id="mainProductImage" src="<%= product.images[0] || '/images/default-image.jpg' %>" alt="<%= product.name %>" style="cursor:zoom-in;">
-        </a>
+        <img
+          id="mainProductImage"
+          src="<%= product.images[0] || '/images/default-image.jpg' %>"
+          alt="<%= product.name %>"
+          style="cursor:zoom-in;"
+          onclick="openZoomModal(this.src)"
+        >
         <div class="thumbnail-row">
           <% product.images.forEach(function(img, idx) { %>
             <img class="thumbnail-img" src="<%= img %>" alt="Thumbnail <%= idx+1 %>" onclick="showMainImage('<%= img %>')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin:6px;cursor:pointer;border:2px solid #eee;">
@@ -477,7 +405,12 @@
       <div class="product-info">
         <h1 id="productTitle"><%= product.name %></h1>
         <p id="productDescription"><%= product.description %></p>
+        <a href="#" id="viewMoreDesc" style="display:none;color:#388e3c;font-weight:500;">View More</a>
         <p class="product-price">₹<span id="productPrice"><%= product.price.toFixed(2) %></span></p>
+        <p class="product-stock" style="font-size:1.1em;color:#388e3c;margin:8px 0;">
+          Stock: <%= typeof product.stock !== 'undefined' ? product.stock : 'N/A' %>
+        </p>
+        <!-- Product Actions -->
         <div class="product-actions">
           <button type="button"
             class="add-to-cart"
@@ -499,7 +432,9 @@
       <div class="recommended-grid">
         <% recommendedProducts.slice(0, 6).forEach(related => { %>
           <div class="product-item">
-            <img src="<%= related.images[0] || '/images/default-image.jpg' %>" alt="<%= related.name %>">
+            <a href="/api/products/productdetails?id=<%= related._id %>">
+              <img src="<%= related.images[0] || '/images/default-image.jpg' %>" alt="<%= related.name %>">
+            </a>
             <p><strong><%= related.name %></strong></p>
             <p>₹<%= related.price.toFixed(2) %></p>
             <a href="/api/products/productdetails?id=<%= related._id %>" class="view-details">View Details</a>
@@ -523,26 +458,6 @@
             </div>
           <% }) %>
         </div>
-      </div>
-      <div class="aspect-summary">
-        <% Object.keys(reviewStats.aspects).forEach(aspect => { %>
-          <div class="aspect-circle">
-            <svg>
-              <circle cx="24" cy="24" r="20" stroke="#e0e0e0" stroke-width="4" fill="none"/>
-              <circle
-                cx="24" cy="24" r="20"
-                stroke="#43a047"
-                stroke-width="4"
-                fill="none"
-                stroke-dasharray="125.6"
-                stroke-dashoffset="<%= 125.6 - (reviewStats.aspects[aspect] / 5) * 125.6 %>"
-                style="transition: stroke-dashoffset 0.5s;"
-              />
-              <text x="24" y="29" text-anchor="middle" font-size="1rem" fill="#222"><%= reviewStats.aspects[aspect].toFixed(1) %></text>
-            </svg>
-            <span class="aspect-label"><%= aspect %></span>
-          </div>
-        <% }) %>
       </div>
     </div>
 
@@ -586,7 +501,7 @@
     <!-- Review Submission Form -->
     <div class="review-form">
       <h2>Submit a Review</h2>
-      <form class="review-form" action="/api/products/submit-review" method="POST">
+      <form class="review-form" id="reviewForm">
         <input type="hidden" name="productId" value="<%= product._id %>">
         <input type="text" name="title" placeholder="Review Title" required>
         <textarea name="text" placeholder="Write your review here..." required></textarea>
@@ -619,22 +534,46 @@
     <img id="zoomedImage" src="" alt="Zoomed Image">
   </div>
 
-  <!-- Scripts -->
-  <script>
-    function searchProducts(searchTerm) {
-      searchTerm = searchTerm.trim().toLowerCase();
-      const products = document.querySelectorAll('.recommended-products .product-item');
-      products.forEach(product => {
-        const name = product.querySelector('strong').textContent.toLowerCase();
-        product.style.display = name.includes(searchTerm) ? '' : 'none';
-      });
-    }
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;">
+    <div class="modal-content" style="background:#fff;padding:24px 32px;border-radius:8px;min-width:280px;max-width:90vw;text-align:center;position:relative;">
+      <button class="close-btn" onclick="closeLoginModal()" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#333;">×</button>
+      <h3>Please log in or register to proceed</h3>
+      <button onclick="window.location.href='/login'" style="padding:10px 20px;background:#4CAF50;color:#fff;border:none;border-radius:5px;cursor:pointer;margin:5px;">Login</button>
+      <button onclick="window.location.href='/register'" style="padding:10px 20px;background:#388e3c;color:#fff;border:none;border-radius:5px;cursor:pointer;margin:5px;">Register</button>
+    </div>
+  </div>
 
-    function addToCart(productId, productName, productPrice, productImage, productDescription) {
-      if (!localStorage.getItem('token')) {
-        document.getElementById('loginModal').style.display = 'flex';
-        return;
-      }
+  <script>
+  const userLoggedIn = "<%= user ? 'true' : 'false' %>";
+
+  function searchProducts(searchTerm) {
+    searchTerm = searchTerm.trim().toLowerCase();
+    const products = document.querySelectorAll('.recommended-products .product-item');
+    products.forEach(product => {
+      const name = product.querySelector('strong').textContent.toLowerCase();
+      product.style.display = name.includes(searchTerm) ? '' : 'none';
+    });
+  }
+
+  function isUserLoggedIn() {
+    return localStorage.getItem('token') !== null;
+  }
+
+  function checkLoginBeforeAction(actionCallback) {
+    fetch('/check-login')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          actionCallback();
+        } else {
+          document.getElementById('loginModal').style.display = 'flex';
+        }
+      });
+  }
+
+  function addToCart(productId, productName, productPrice, productImage, productDescription) {
+    checkLoginBeforeAction(() => {
       let cart = JSON.parse(localStorage.getItem('cart')) || [];
       const existing = cart.find(item => item.id === productId);
       if (existing) {
@@ -657,13 +596,11 @@
         popup.style.opacity = 0;
         setTimeout(() => popup.style.display = 'none', 500);
       }, 1500);
-    }
-    
-    function buyNow(productId, productName, productPrice, productImage, productDescription) {
-      if (!localStorage.getItem('token')) {
-        document.getElementById('loginModal').style.display = 'flex';
-        return;
-      }
+    });
+  }
+
+  function buyNow(productId, productName, productPrice, productImage, productDescription) {
+    checkLoginBeforeAction(() => {
       const item = {
         id: productId,
         name: productName,
@@ -674,147 +611,106 @@
       };
       localStorage.setItem('cart', JSON.stringify([item]));
       window.location.href = '/checkout';
+    });
+  }
+
+  function openZoomModal(src) {
+    document.getElementById('zoomedImage').src = src;
+    document.getElementById('zoomModal').classList.add('active');
+  }
+
+  function closeZoomModal() {
+    document.getElementById('zoomModal').classList.remove('active');
+  }
+
+  function showMainImage(src) {
+    document.getElementById('mainProductImage').src = src;
+    // Optional: Also update zoom modal image if open
+    if (document.getElementById('zoomModal').classList.contains('active')) {
+      document.getElementById('zoomedImage').src = src;
     }
-    
-    function deleteReview(reviewId) {
-      if (confirm('Are you sure you want to delete your review?')) {
-        fetch('/api/products/delete-review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reviewId })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) location.reload();
-          else alert('Could not delete review.');
-        });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeZoomModal();
+  });
+
+  function toggleCategoryDropdown() {
+    const dropdown = document.getElementById('categoryDropdown');
+    dropdown.classList.toggle('show');
+  }
+  window.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('categoryDropdown');
+    if (dropdown && dropdown.classList.contains('show') && !dropdown.contains(e.target) && !e.target.classList.contains('three-dots')) {
+      dropdown.classList.remove('show');
+    }
+  });
+
+  // Description "View More" logic (after 50 words)
+  document.addEventListener('DOMContentLoaded', function() {
+    const descElem = document.getElementById('productDescription');
+    const viewMoreLink = document.getElementById('viewMoreDesc');
+    if (!descElem) return;
+    const fullText = descElem.textContent.trim();
+    const words = fullText.split(/\s+/);
+    if (words.length > 50) {
+      const shortText = words.slice(0, 50).join(' ') + '...';
+      descElem.textContent = shortText;
+      viewMoreLink.style.display = 'inline';
+      viewMoreLink.onclick = function(e) {
+        e.preventDefault();
+        descElem.textContent = fullText;
+        viewMoreLink.style.display = 'none';
+      };
+    }
+  });
+
+  function showLoginModal() {
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+  function closeLoginModal() {
+    document.getElementById('loginModal').style.display = 'none';
+  }
+  window.onclick = function(event) {
+    const modal = document.getElementById('loginModal');
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+
+  // Submit review with fetch API
+  document.getElementById('reviewForm').onsubmit = function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch('/api/products/submit-review', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        document.getElementById('reviewSuccessPopup').style.display = 'block';
+        setTimeout(() => {
+          document.getElementById('reviewSuccessPopup').style.display = 'none';
+          location.reload();
+        }, 1500);
+      } else {
+        const errorDiv = document.getElementById('reviewError');
+        errorDiv.textContent = result.message || 'Error submitting review';
+        errorDiv.style.display = 'block';
       }
-    }
-
-    let reviewPage = 1;
-    function loadMoreReviews() {
-      reviewPage++;
-      fetch(`/api/products/reviews?productId=<%= product._id %>&page=${reviewPage}`)
-        .then(res => res.json())
-        .then(newReviews => {
-          const customerReviews = document.getElementById('customerReviews');
-          newReviews.forEach(review => {
-            const reviewItem = document.createElement('div');
-            reviewItem.classList.add('review-item');
-            reviewItem.innerHTML = `
-              <div class="review-header">
-                <span class="review-rating">${review.rating}★</span>
-                <span class="review-title">${review.title}</span>
-              </div>
-              <div class="review-text">${review.text}</div>
-              <div class="review-meta">
-                <span class="review-author">${review.author}</span>
-                ${review.location ? `<span class="review-location">${review.location}</span>` : ''}
-                <span class="review-date">${review.date ? new Date(review.date).toLocaleDateString() : ''}</span>
-              </div>
-              <div class="review-votes">
-                <span>👍 ${review.upvotes || 0}</span>
-                <span>👎 ${review.downvotes || 0}</span>
-              </div>
-            `;
-            customerReviews.appendChild(reviewItem);
-          });
-          if (newReviews.length < 10) {
-            document.getElementById('viewMoreReviews').style.display = 'none';
-          }
-        });
-    }
-
-    function storeAuthToken(response) {
-      if (response && response.token) {
-        localStorage.setItem('token', response.token);
-      }
-    }
-
-    document.querySelector('.review-form form').addEventListener('submit', function(e) {
-      e.preventDefault();
+    })
+    .catch(error => {
       const errorDiv = document.getElementById('reviewError');
-      errorDiv.style.display = 'none';
-      errorDiv.textContent = '';
-
-      if (!localStorage.getItem('token')) {
-        document.getElementById('loginModal').style.display = 'flex';
-        return;
-      }
-
-      const productId = this.productId.value;
-      const title = this.title.value.trim();
-      const text = this.text.value.trim();
-      const rating = this.rating.value;
-      if (!title || !text || !rating) {
-        errorDiv.textContent = "All fields are required.";
-        errorDiv.style.display = 'block';
-        return;
-      }
-      if (text.length < 10) {
-        errorDiv.textContent = "Review text must be at least 10 characters.";
-        errorDiv.style.display = 'block';
-        return;
-      }
-
-      fetch('/api/products/submit-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
-        },
-        body: JSON.stringify({
-          productId,
-          title,
-          text,
-          rating
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.getElementById('reviewSuccessPopup').style.display = 'block';
-          setTimeout(() => {
-            document.getElementById('reviewSuccessPopup').style.display = 'none';
-            this.reset();
-          }, 2000);
-        } else {
-          errorDiv.textContent = data.message || 'Failed to submit review.';
-          errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        errorDiv.textContent = 'Server error, please try again.';
-        errorDiv.style.display = 'block';
-      });
+      errorDiv.textContent = 'Error submitting review';
+      errorDiv.style.display = 'block';
     });
-
-    function showMainImage(src) {
-      document.getElementById('mainProductImage').src = src;
-    }
-
-    document.getElementById('mainProductImage').onclick = function() {
-      document.getElementById('zoomedImage').src = this.src;
-      document.getElementById('zoomModal').classList.add('active');
-    };
-    function closeZoomModal() {
-      document.getElementById('zoomModal').classList.remove('active');
-    }
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeZoomModal();
-    });
-
-    function toggleCategoryDropdown() {
-      const dropdown = document.getElementById('categoryDropdown');
-      dropdown.classList.toggle('show');
-    }
-    window.addEventListener('click', function(e) {
-      const dropdown = document.getElementById('categoryDropdown');
-      if (dropdown && dropdown.classList.contains('show') && !dropdown.contains(e.target) && !e.target.classList.contains('three-dots')) {
-        dropdown.classList.remove('show');
-      }
-    });
-  </script>
+  };
+</script>
 </body>
 </html>

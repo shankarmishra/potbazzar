@@ -10,7 +10,8 @@ import Product from '../models/productModels.js';
 const createTransaction = asyncHandler(async (req, res) => {
     const { amount, userId } = req.body;
 
-    if (!amount || !userId) {        return res.status(400).json({ success: false, message: "Amount and User ID are required" });
+    if (!amount || !userId) {
+        return res.status(400).json({ success: false, message: "Amount and User ID are required" });
     }
 
     const razorpay = new Razorpay({
@@ -74,7 +75,7 @@ const createOrder = asyncHandler(async (req, res) => {
     const totalAmount = cartItems.reduce((total, item) => total + item.quantity * item.price, 0);
 
     try {
-        const finalDeliveryDate = deliveryDate || new Date(new Date().setDate(new Date().getDate() + 3));
+        const finalDeliveryDate = deliveryDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 
         // Validate all product IDs in cartItems
         for (const item of cartItems) {
@@ -94,7 +95,7 @@ const createOrder = asyncHandler(async (req, res) => {
             status: "Order Placed",
         });
 
-        const transaction = await Transaction.create({
+        await Transaction.create({
             userId: userId,
             order: newOrder._id,
             orderId: razorpayOrderId,

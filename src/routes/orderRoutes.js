@@ -1,6 +1,7 @@
 import express from 'express';
 import { createTransaction, createOrder, getOrderbyUserId } from '../controllers/orderController.js';
-import verifyToken from '../Middleware/userMiddleware.js'; // fixed casing
+import verifyToken, { requireApiLogin } from '../Middleware/userMiddleware.js';
+
 
 const router = express.Router();
 
@@ -10,18 +11,18 @@ const asyncHandler = (fn) => (req, res, next) => {
 };
 
 // Create a transaction (protected)
-router.post('/transaction', verifyToken, asyncHandler(createTransaction));
-
-// Get orders by user ID (protected)
-router.get('/:userId', verifyToken, asyncHandler(getOrderbyUserId));
+router.post('/transaction', requireApiLogin, createTransaction);
 
 // Create an order (protected)
 router.post('/', verifyToken, asyncHandler(createOrder));
 
+// Get orders by user ID (protected)
+router.get('/user/:userId', verifyToken, asyncHandler(getOrderbyUserId));
+
+// Checkout page (session/EJS, not protected by JWT)
 router.get('/checkoutpage', (req, res) => {
     res.render('checkoutpage');
-}
-);
+});
 
 // Global error handling middleware
 router.use((err, req, res, next) => {
@@ -32,7 +33,7 @@ router.use((err, req, res, next) => {
     });
 });
 
-// Optional: Handle invalid routes for this module
+// Handle invalid routes for this module
 router.use((req, res) => {
     res.status(404).json({
         success: false,

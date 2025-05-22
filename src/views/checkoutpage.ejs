@@ -326,24 +326,34 @@
           loadingElement.style.display = 'block';
           errorMessageElement.style.display = 'none';
 
-          const token = localStorage.getItem('token');
-          if (!token) {
-            throw new Error('Please login to continue');
+          // Check login before processing payment and fetching user data
+          const loginCheck = await fetch('/check-login').then(res => res.json());
+          if (!loginCheck.loggedIn) {
+            // Show login modal or redirect to login page
+            if (document.getElementById('loginModal')) {
+              document.getElementById('loginModal').style.display = 'flex';
+            } else {
+              window.location.href = '/login';
+            }
+            return;
           }
+
+          // 2. Fetch user data (session-based, no token needed)
+          const userResponse = await fetch('/api/users/profile-api');
+          if (!userResponse.ok) {
+            // handle not logged in
+            if (document.getElementById('loginModal')) {
+              document.getElementById('loginModal').style.display = 'flex';
+            } else {
+              window.location.href = '/login';
+            }
+            return;
+          }
+          const userData = await userResponse.json();
 
           const address = document.getElementById('address').value.trim();
           if (!address) {
             throw new Error("Please provide a delivery address.");
-          }
-
-          const userResponse = await fetch('/api/users/profile', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (!userResponse.ok) throw new Error('Failed to authenticate user');
-
-          const userData = await userResponse.json();
-          if (!userData.user || !userData.user._id) {
-            throw new Error('Invalid user data received');
           }
 
           // Add delivery charge to total amount for payment
@@ -351,10 +361,7 @@
 
           const transactionResponse = await fetch('/api/orders/transaction', {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` 
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount: totalAmount, userId: userData.user._id })
           });
           if (!transactionResponse.ok) {
@@ -379,10 +386,7 @@
 
                   const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
-                    headers: { 
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${token}` 
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       razorpayOrderId: razorpayResponse.razorpay_order_id,
                       razorpayPaymentId: razorpayResponse.razorpay_payment_id,

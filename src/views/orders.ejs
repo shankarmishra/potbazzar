@@ -5,191 +5,321 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Orders</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            color: #333;
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #1976D2;
+            --accent-color: #FF9800;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
         }
 
-        nav {
-            background-color: #4CAF50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            color: #f5f5f5;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(0, 0, 0, 0.2);
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
         .container {
-            margin: 80px auto 20px;
-            padding: 20px;
-            max-width: 1200px;
+            max-width: 1400px;
+            margin: 100px auto 40px;
+            padding: 0 15px;
+            position: relative;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            padding: 1rem 0;
+            z-index: 10;
+            border-radius: 8px;
         }
 
         .order-container {
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-out;
+            transition: transform 0.3s ease;
+        }
+
+        .order-container:hover {
+            transform: translateY(-5px);
         }
 
         .order-item {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 1rem;
+            padding: 1rem 0;
             border-bottom: 1px solid #eee;
-            padding: 10px 0;
-            display: flex;
             align-items: center;
-            gap: 20px;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
         }
 
         .order-item img {
-            width: 120px;
+            width: 100%;
+            max-width: 120px;
             height: 120px;
             object-fit: cover;
             border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            background: #fafafa;
         }
 
         .order-details {
-            flex: 1;
             text-align: left;
         }
 
         .product-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
 
         .product-price {
-            font-size: 1.1em;
-            color: #4CAF50;
-            margin: 5px 0;
-        }
-
-        h2 {
-            color: #4CAF50;
-            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin: 0.3rem 0;
         }
 
         .order-status {
-            padding: 5px 10px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            background: linear-gradient(45deg, #e8f5e9, #c8e6c9);
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .status-progress {
+            margin: 1rem 0;
+            background: #f0f0f0;
             border-radius: 4px;
-            font-weight: bold;
-            background-color: #e8f5e9;
-            color: #4CAF50;
-            display: inline-block;
-            margin: 10px 0;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .status-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transition: width 0.5s ease;
         }
 
         .delivery-info {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-            text-align: left;
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
         }
 
         .error-message {
-            color: #ff0000;
-            background-color: #ffe6e6;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
+            color: #d32f2f;
+            background: #ffeaea;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
         }
 
         .total-amount {
-            font-size: 1.2em;
-            font-weight: bold;
+            font-size: 1.2rem;
+            font-weight: 700;
             text-align: right;
-            margin-top: 15px;
-            color: #4CAF50;
+            color: var(--secondary-color);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
         }
 
-        .delete-btn {
-            background-color: #ff3b3b;
+        .track-button {
+            background: var(--accent-color);
             color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            padding: 0.5rem 1rem;
             border: none;
-            transition: background-color 0.3s;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .delete-btn:hover {
-            background-color: #ff1a1a;
+        .track-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                margin: 80px auto 20px;
+                padding: 0 10px;
+            }
+
+            .order-item {
+                grid-template-columns: 100px 1fr auto;
+            }
+
+            .order-item img {
+                max-width: 100px;
+                height: 100px;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .order-item img {
+                max-width: 80px;
+                height: 80px;
+                margin: 0 auto;
+            }
+
+            .order-details {
+                text-align: center;
+            }
+
+            .total-amount {
+                text-align: center;
+            }
+
+            .track-button {
+                width: 100%;
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .order-container {
+                padding: 1rem;
+            }
+
+            .product-name {
+                font-size: 1rem;
+            }
+
+            .product-price {
+                font-size: 0.95rem;
+            }
+
+            .delivery-info {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/cart">Cart</a>
-            <a href="/orders">My Orders</a>
-            <a href="/logout" id="logout-link">Logout</a>
-        </div>
-    </nav>
+    <%- include('pagecomponent/navbar', { user: user, categories: categories }) %>
+    <%- include('pagecomponent/caregorybar', { categories: categories }) %>
 
     <div class="container">
         <h2>My Orders</h2>
-        <div id="orders-container">Loading orders...</div>
+        <div id="orders-container">
+            <div class="loader"></div>
+        </div>
     </div>
 
+    <%- include('pagecomponent/footer') %>
+
     <script>
+        function checkLoginBeforeAction(actionCallback) {
+            fetch('/check-login')
+              .then(res => res.json())
+              .then (data => {
+                if (!data.loggedIn) {
+                  // Show login modal or redirect
+                  if (document.getElementById('loginModal')) {
+                    document.getElementById('loginModal').style.display = 'flex';
+                  } else {
+                    window.location.href = '/login';
+                  }
+                  throw new Error('User not logged in');
+                }
+                actionCallback();
+              })
+              .catch(err => console.error(err));
+        }
+
         document.addEventListener("DOMContentLoaded", async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Please login to view your orders');
-                window.location.href = '/login';
+            // Check login using session
+            const loginCheck = await fetch('/check-login').then(res => res.json());
+            if (!loginCheck.loggedIn) {
+                if (document.getElementById('loginModal')) {
+                    document.getElementById('loginModal').style.display = 'flex';
+                } else {
+                    window.location.href = '/login';
+                }
                 return;
             }
 
             try {
-                const userResponse = await fetch('/api/users/profile', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
+                // Get user profile to fetch userId
+                const userResponse = await fetch('/api/users/profile');
                 if (!userResponse.ok) {
-                    throw new Error('User authentication failed');
+                    alert('Session expired. Please login again.');
+                    window.location.href = '/login';
+                    return;
                 }
-
                 const userData = await userResponse.json();
                 const userId = userData.user._id;
 
-                const response = await fetch(`/api/orders/${userId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch orders');
-                }
+                // Fetch orders using the correct endpoint
+                const response = await fetch(`/api/orders/user/${userId}`);
+                if (!response.ok) throw new Error('Failed to fetch orders');
 
                 const data = await response.json();
                 const ordersContainer = document.getElementById('orders-container');
@@ -206,12 +336,25 @@
                             return total + ((item.product.price || 0) * (item.quantity || 0));
                         }, 0) : 0;
 
+                        // Calculate progress based on order status
+                        const statusProgress = {
+                            'Order Placed': 25,
+                            'Processing': 50,
+                            'Shipped': 75,
+                            'Delivered': 100
+                        };
+                        const progress = statusProgress[order.status] || 25;
+
                         return `
                             <div class="order-container">
                                 <p><strong>Order ID:</strong> ${order._id || 'N/A'}</p>
                                 <p><strong>Order Date:</strong> ${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
                                 <div class="order-status">
                                     Status: ${order.status || 'Order Placed'}
+                                    <span>🚚</span>
+                                </div>
+                                <div class="status-progress">
+                                    <div class="status-progress-bar" style="width: ${progress}%"></div>
                                 </div>
                                 <div class="delivery-info">
                                     <p><strong>Delivery Address:</strong> ${order.address || 'N/A'}</p>
@@ -232,7 +375,7 @@
                                                 <p>Quantity: ${item.quantity || 0}</p>
                                                 <p>Subtotal: ₹${(item.product.price || 0) * (item.quantity || 0)}</p>
                                             </div>
-                                            <button class="delete-btn" data-order-id="${order._id}" data-item-id="${item._id}">Delete Item</button>
+                                            <button class="track-button" onclick="alert('Tracking feature coming soon!')">Track Order</button>
                                         </div>
                                     `;
                                 }).join('') : '<div class="error-message">No items found in this order</div>'}
@@ -244,48 +387,14 @@
                         return `<div class="error-message">Error displaying order information</div>`;
                     }
                 }).join('');
-
-                // Add event listeners to delete buttons
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const orderId = e.target.getAttribute('data-order-id');
-                        const itemId = e.target.getAttribute('data-item-id');
-
-                        try {
-                            const deleteResponse = await fetch(`/api/orders/${orderId}/items/${itemId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-
-                            if (!deleteResponse.ok) {
-                                throw new Error('Failed to delete item');
-                            }
-
-                            alert('Item deleted successfully');
-                            window.location.reload();  // Reload to reflect changes
-                        } catch (error) {
-                            console.error('Error deleting item:', error);
-                            alert('Failed to delete item');
-                        }
-                    });
-                });
             } catch (error) {
                 console.error("Error fetching orders:", error);
                 document.getElementById('orders-container').innerHTML = `
                     <div class="error-message">
                         <p>Failed to load orders. Please try refreshing the page or logging in again.</p>
-                    </div>`;
+                    </div>
+                `;
             }
-        });
-
-        // Logout functionality
-        document.getElementById('logout-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('token');
-            window.location.href = '/login';
         });
     </script>
 </body>

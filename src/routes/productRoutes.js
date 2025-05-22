@@ -1,5 +1,6 @@
 import express from 'express';
 import { getProducts, getProductDetails, submitReview } from '../controllers/productController.js';
+import { requireLogin } from '../Middleware/userMiddleware.js';
 import verifyToken from '../Middleware/userMiddleware.js';
 import Product from '../models/productModels.js';
 
@@ -11,8 +12,9 @@ router.get('/products/:categoryId', getProducts);
 // Route to fetch product details by ID (public)
 router.get('/productdetails', getProductDetails);
 
-// Route to submit a review (protected)
-router.post('/submit-review', verifyToken, submitReview);
+// Route to submit a review (protected, session-based login)
+router.post('/submit-review', requireLogin, submitReview);
+router.post('/api/submit-review', verifyToken, submitReview);
 
 // Route to fetch products with optional subcategory (public)
 router.get('/products', getProducts);

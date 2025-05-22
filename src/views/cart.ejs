@@ -300,25 +300,8 @@
     </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="nav-links" id="navLinks">
-                <a href="/">HOME</a>
-                <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
-                <a href="/#about">ABOUT</a>
-                <a href="/cart" style="background:#388e3c;color:#fff;">CART</a>
-            </div>
-            <input type="text" placeholder="Search cart..." class="search-bar" onkeyup="searchProducts(this.value)">
-            <div class="three-dots" onclick="toggleMobileMenu()">&#x22EE;</div>
-        </nav>
-        <div class="mobile-menu" id="mobileMenu">
-            <button class="close-btn" onclick="toggleMobileMenu()">&times;</button>
-            <a href="/">HOME</a>
-            <a href="https://www.homegardennet.com/?m=1" target="_blank">BLOG</a>
-            <a href="/#about">ABOUT</a>
-            <a href="/cart" style="background:#388e3c;color:#fff;">CART</a>
-        </div>
-    </header>
+    <%- include('pagecomponent/navbar', { user: user, categories: categories }) %>
+  <%- include('pagecomponent/caregorybar', { categories: categories }) %>
 
     <div class="cart-items">
         <h2>Your Cart</h2>
@@ -326,7 +309,7 @@
         <div id="cart-items-container"></div>
         <div class="total-section">
             <p>Subtotal: ₹<span id="subtotal-price">0.00</span></p>
-            <p>Delivery: ₹<span id="delivery-charge">50.00</span></p>
+            <p>Delivery: ₹<span id="delivery-charge">79.00</span></p>
             <p><strong>Total: ₹<span id="total-price">0.00</span></strong></p>
         </div>
         <div class="cart-actions">
@@ -336,138 +319,143 @@
     </div>
 
     <script>
+        window.checkLoginBeforeAction = function (actionCallback) {
+  fetch('/check-login')
+    .then(res => res.json())
+    .then(data => {
+      if (data.loggedIn) {
+        actionCallback();
+      } else {
+        if (loginModal) {
+          loginModal.style.display = "flex";
+          loginModal.setAttribute("aria-hidden", "false");
+        }
+      }
+    })
+    .catch(err => console.error('Login check failed:', err));
+};
+
         async function fetchProductStock(productId) {
-            try {
-                const response = await fetch(`/api/products/product/stock/${productId}`, {
-                    headers: {
-                        'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
-                    }
-                });
-                if (!response.ok) throw new Error('Failed to fetch stock');
-                const data = await response.json();
-                if (typeof data.stock !== 'number' || isNaN(data.stock)) throw new Error('Invalid stock data');
-                return data.stock;
-            } catch (error) {
-                console.error('Error fetching stock:', error);
-                showStockError('Failed to fetch stock for some items. Please try again later.');
-                // Return -1 to indicate error (treat as out of stock)
-                return -1;
-            }
+        try {
+            const response = await fetch(`/api/products/product/stock/${productId}`);
+            if (!response.ok) throw new Error('Failed to fetch stock');
+            const data = await response.json();
+            if (typeof data.stock !== 'number' || isNaN(data.stock)) throw new Error('Invalid stock data');
+            return data.stock;
+        } catch (error) {
+            console.error('Error fetching stock:', error);
+            showStockError('Failed to fetch stock for some items. Please try again later.');
+            return -1;
         }
+    }
 
-        function showStockError(msg) {
-            const err = document.getElementById('stock-error');
-            err.textContent = msg;
-            err.style.display = 'block';
-            setTimeout(() => {
-                err.style.display = 'none';
-                err.textContent = '';
-            }, 3000);
-        }
+    function showStockError(msg) {
+        const err = document.getElementById('stock-error');
+        err.textContent = msg;
+        err.style.display = 'block';
+        setTimeout(() => {
+            err.style.display = 'none';
+            err.textContent = '';
+        }, 3000);
+    }
 
-        function searchProducts(searchTerm) {
-            searchTerm = searchTerm.trim().toLowerCase();
-            const items = document.querySelectorAll('.cart-item');
-            items.forEach(item => {
-                const name = item.querySelector('.cart-item-info strong').textContent.toLowerCase();
-                item.style.display = name.includes(searchTerm) ? '' : 'none';
-            });
-        }
+    function searchProducts(searchTerm) {
+        searchTerm = searchTerm.trim().toLowerCase();
+        const items = document.querySelectorAll('.cart-item');
+        items.forEach(item => {
+            const name = item.querySelector('.cart-item-info strong').textContent.toLowerCase();
+            item.style.display = name.includes(searchTerm) ? '' : 'none';
+        });
+    }
 
-        async function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartItemsContainer = document.getElementById('cart-items-container');
-            let subtotal = 0;
-            const deliveryCharge = cart.length ? 79 : 0;
+    async function loadCart() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        let subtotal = 0;
+        const deliveryCharge = cart.length ? 79 : 0;
 
-            cartItemsContainer.innerHTML = '';
+        cartItemsContainer.innerHTML = '';
 
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
-                document.getElementById('subtotal-price').textContent = '0.00';
-                document.getElementById('delivery-charge').textContent = '0.00';
-                document.getElementById('total-price').textContent = '0.00';
-            } else {
-                for (const item of cart) {
-                    // Fetch latest stock from backend
-                    const latestStock = await fetchProductStock(item.id);
-                    item.stock = (typeof latestStock === 'number' && latestStock >= 0) ? latestStock : 0;
-                    item.fetchFailed = latestStock === -1;
-
-                    // Adjust quantity if it exceeds stock or stock fetch failed
-                    if (item.quantity > item.stock) {
-                        item.quantity = item.stock;
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        showStockError(`Adjusted quantity for ${item.name} to available stock of ${item.stock}.`);
-                    }
-
-                    subtotal += item.price * item.quantity;
-
-                    const cartItem = document.createElement('div');
-                    cartItem.classList.add('cart-item');
-
-                    const fetchFailed = latestStock === -1;
-                    const outOfStock = !fetchFailed && (item.stock === 0);
-
-                    cartItem.innerHTML = `
-                        <img src="${item.image || 'https://source.unsplash.com/100x100/?plant'}" alt="${item.name}">
-                        <div class="cart-item-info">
-                            <p><strong>${item.name}</strong></p>
-                            <p>₹${item.price.toFixed(2)}</p>
-                            <input type="number" min="1" max="${item.stock}" class="quantity-input" value="${item.quantity}" 
-                                onchange="updateQuantity('${item.id}', this.value, ${item.stock})" ${(outOfStock || fetchFailed) ? 'disabled' : ''}>
-                            <p style="color:#e53935;font-size:0.95em;">
-                                ${fetchFailed ? 'Error fetching stock' : (outOfStock ? 'Out of Stock' : 'Stock: ' + item.stock)}
-                            </p>
-                        </div>
-                        <div class="cart-item-description">
-                            <p>${item.description || 'No description available'}</p>
-                        </div>
-                        <button class="remove-btn" onclick="removeItem('${item.id}')">Remove</button>
-                    `;
-
-                    cartItemsContainer.appendChild(cartItem);
-                }
-
-                document.getElementById('subtotal-price').textContent = subtotal.toFixed(2);
-                document.getElementById('delivery-charge').textContent = deliveryCharge.toFixed(2);
-                document.getElementById('total-price').textContent = (subtotal + deliveryCharge).toFixed(2);
-            }
-        }
-
-        async function updateQuantity(id, newQuantity, stock) {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const item = cart.find(item => item.id === id);
-
-            if (item) {
-                // Fetch latest stock to ensure accuracy
-                const latestStock = await fetchProductStock(id);
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
+            document.getElementById('subtotal-price').textContent = '0.00';
+            document.getElementById('delivery-charge').textContent = '0.00';
+            document.getElementById('total-price').textContent = '0.00';
+        } else {
+            for (const item of cart) {
+                const latestStock = await fetchProductStock(item.id);
                 item.stock = (typeof latestStock === 'number' && latestStock >= 0) ? latestStock : 0;
-                stock = item.stock;
+                item.fetchFailed = latestStock === -1;
 
-                const quantity = Math.max(1, parseInt(newQuantity));
-                if (quantity > stock) {
-                    showStockError(`Cannot exceed available stock of ${stock}!`);
-                    item.quantity = stock;
-                } else {
-                    item.quantity = quantity;
+                if (item.quantity > item.stock) {
+                    item.quantity = item.stock;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    showStockError(`Adjusted quantity for ${item.name} to available stock of ${item.stock}.`);
                 }
-                localStorage.setItem('cart', JSON.stringify(cart));
-                loadCart();
-            }
-        }
 
-        async function proceedToCheckout() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (!cart.length) {
-                alert('Your cart is empty. Please add items to your cart before proceeding to checkout.');
-                return;
+                subtotal += item.price * item.quantity;
+
+                const cartItem = document.createElement('div');
+                cartItem.classList.add('cart-item');
+
+                const fetchFailed = latestStock === -1;
+                const outOfStock = !fetchFailed && (item.stock === 0);
+
+                cartItem.innerHTML = `
+                    <img src="${item.image || 'https://source.unsplash.com/100x100/?plant'}" alt="${item.name}">
+                    <div class="cart-item-info">
+                        <p><strong>${item.name}</strong></p>
+                        <p>₹${item.price.toFixed(2)}</p>
+                        <input type="number" min="1" max="${item.stock}" class="quantity-input" value="${item.quantity}" 
+                            onchange="updateQuantity('${item.id}', this.value, ${item.stock})" ${(outOfStock || fetchFailed) ? 'disabled' : ''}>
+                        <p style="color:#e53935;font-size:0.95em;">
+                            ${fetchFailed ? 'Error fetching stock' : (outOfStock ? 'Out of Stock' : 'Stock: ' + item.stock)}
+                        </p>
+                    </div>
+                    <div class="cart-item-description">
+                        <p>${item.description || 'No description available'}</p>
+                    </div>
+                    <button class="remove-btn" onclick="removeItem('${item.id}')">Remove</button>
+                `;
+
+                cartItemsContainer.appendChild(cartItem);
             }
-            if (!localStorage.getItem('token')) {
-                alert('Please login to proceed to checkout.');
-                window.location.href = '/login';
-                return;
+
+            document.getElementById('subtotal-price').textContent = subtotal.toFixed(2);
+            document.getElementById('delivery-charge').textContent = deliveryCharge.toFixed(2);
+            document.getElementById('total-price').textContent = (subtotal + deliveryCharge).toFixed(2);
+        }
+    }
+
+    async function updateQuantity(id, newQuantity, stock) {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const item = cart.find(item => item.id === id);
+
+        if (item) {
+            const latestStock = await fetchProductStock(id);
+            item.stock = (typeof latestStock === 'number' && latestStock >= 0) ? latestStock : 0;
+            stock = item.stock;
+
+            const quantity = Math.max(1, parseInt(newQuantity));
+            if (quantity > stock) {
+                showStockError(`Cannot exceed available stock of ${stock}!`);
+                item.quantity = stock;
+            } else {
+                item.quantity = quantity;
             }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCart();
+        }
+    }
+
+    async function proceedToCheckout() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (!cart.length) {
+            alert('Your cart is empty. Please add items to your cart before proceeding to checkout.');
+            return;
+        }
+        // Check login before proceeding
+        checkLoginBeforeAction(async () => {
             // Recheck stock before checkout
             for (const item of cart) {
                 const latestStock = await fetchProductStock(item.id);
@@ -481,34 +469,35 @@
                 }
             }
             window.location.href = '/checkout';
-        }
-
-        function removeItem(id) {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(item => item.id !== id);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            loadCart();
-        }
-
-        function emptyCart() {
-            localStorage.removeItem('cart');
-            loadCart();
-        }
-
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('show');
-        }
-        // Optional: close menu when clicking outside
-        window.addEventListener('click', function(e) {
-            const menu = document.getElementById('mobileMenu');
-            const dots = document.querySelector('.three-dots');
-            if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !dots.contains(e.target)) {
-                menu.classList.remove('show');
-            }
         });
+    }
 
+    function removeItem(id) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart = cart.filter(item => item.id !== id);
+        localStorage.setItem('cart', JSON.stringify(cart));
         loadCart();
-    </script>
+    }
+
+    function emptyCart() {
+        localStorage.removeItem('cart');
+        loadCart();
+    }
+
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('show');
+    }
+    // Optional: close menu when clicking outside
+    window.addEventListener('click', function(e) {
+        const menu = document.getElementById('mobileMenu');
+        const dots = document.querySelector('.three-dots');
+        if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !dots.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    loadCart();
+</script>
 </body>
 </html>

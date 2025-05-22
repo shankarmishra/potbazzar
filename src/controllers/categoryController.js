@@ -2,6 +2,7 @@ import Category from '../models/categoryModels.js';
 import Subcategory from '../models/Subcategorymodel.js';
 import Product from '../models/productModels.js';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -438,37 +439,72 @@ export const deleteProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   const { category, sub } = req.query;
   try {
-    let filter = {};
+    const categories = await Category.find().lean();
+
+    let categoryObj = null;
+    let subCategoryObj = null;
+    let categoryName = '';
+    let subCategoryName = '';
+    let categoryDescription = '';
+
+    // Support category by ID or name
     if (category) {
-      filter.category = category;
+      if (mongoose.Types.ObjectId.isValid(category)) {
+        categoryObj = await Category.findById(category).lean();
+      }
+      if (!categoryObj) {
+        categoryObj = await Category.findOne({ name: { $regex: new RegExp('^' + category + '$', 'i') } }).lean();
+      }
+      if (categoryObj) {
+        categoryName = categoryObj.name;
+        categoryDescription = categoryObj.description || '';
+      }
     }
+
+    // Support subcategory by ID or name
     if (sub) {
-      filter.subcategory = sub;
+      if (mongoose.Types.ObjectId.isValid(sub)) {
+        subCategoryObj = await Subcategory.findById(sub).lean();
+      }
+      if (!subCategoryObj) {
+        subCategoryObj = await Subcategory.findOne({ name: { $regex: new RegExp('^' + sub + '$', 'i') } }).lean();
+      }
+      if (subCategoryObj) {
+        subCategoryName = subCategoryObj.name;
+      }
+    }
+
+    // Build product filter
+    let filter = {};
+    if (subCategoryObj) {
+      filter.subcategory = subCategoryObj._id;
+    } else if (categoryObj) {
+      const subcats = await Subcategory.find({ category: categoryObj._id }).lean();
+      filter.subcategory = { $in: subcats.map(s => s._id) };
     }
 
     const products = await Product.find(filter).populate({
       path: 'subcategory',
       populate: { path: 'category' }
-    });
-
-    const categories = await Category.find();
-    const subcategories = await Subcategory.find().populate('category');
+    }).lean();
 
     res.render('category', {
-      products,
+      user: req.user || res.locals.user || null,
       categories,
-      subcategories,
-      selectedCategory: category,
-      selectedSubcategory: sub
+      products,
+      categoryName,
+      subCategoryName,
+      categoryDescription
     });
   } catch (error) {
     console.error('Error fetching products:', error);
     res.render('category', {
-      products: [],
+      user: req.user || res.locals.user || null,
       categories: [],
-      subcategories: [],
-      selectedCategory: null,
-      selectedSubcategory: null,
+      products: [],
+      categoryName: '',
+      subCategoryName: '',
+      categoryDescription: '',
       error: 'Error fetching products.'
     });
   }

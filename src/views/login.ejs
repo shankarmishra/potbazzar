@@ -179,27 +179,31 @@
       try {
         const response = await fetch('/api/users/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
+        // If backend sends a redirect (HTML), follow it
+        if (response.redirected) {
+          window.location.href = response.url;
+          return;
+        }
+
+        // Otherwise, handle JSON response
         const result = await response.json();
 
         if (response.ok) {
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('refreshToken', result.refreshToken);
           messageEl.textContent = 'Login successful! Redirecting...';
           messageEl.className = 'success';
           setTimeout(() => {
             window.location.href = '/';
-          }, 1500);
+          }, 1000);
         } else {
           messageEl.textContent = result.message || 'Login failed.';
           messageEl.className = 'error';
         }
       } catch (error) {
+        console.error(error);
         messageEl.textContent = 'An error occurred. Please try again.';
         messageEl.className = 'error';
       }

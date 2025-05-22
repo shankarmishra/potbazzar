@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-// User Schema
+// Define User Schema
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Email is required'],
         unique: true,
+        lowercase: true,
+        trim: true,
         match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
     },
     password: {
@@ -26,26 +28,14 @@ const userSchema = new mongoose.Schema({
     },
     address: {
         type: String,
-        required: [true, 'Address is required']
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+        required: [true, 'Address is required'],
+        trim: true
     }
+}, {
+    timestamps: true // Automatically manages createdAt and updatedAt fields
 });
 
-// Set up a pre-save hook to update the updatedAt field
-userSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
-});
-
-// Create the User model
+// Create User model
 const User = mongoose.model('User', userSchema);
 
-// Export the model
 export default User;
