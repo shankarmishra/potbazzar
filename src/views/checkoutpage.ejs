@@ -20,7 +20,7 @@
     
     /* Navigation */
     nav {
-      background-color: #4CAF50;
+      background: linear-gradient(90deg, #388e3c, #4CAF50);
       display: flex;
       justify-content: flex-end;
       align-items: center;
@@ -223,6 +223,46 @@
         gap: 10px;
       }
     }
+    @media (max-width: 600px) {
+      .container {
+        padding: 5px;
+        margin-top: 80px;
+      }
+      #cart-summary, #delivery-info {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+      .cart-item img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 8px;
+      }
+      input, button {
+        font-size: 15px;
+        padding: 10px;
+        width: 100%;
+        margin: 8px 0;
+      }
+      .modal-content {
+        padding: 12px 8px;
+        max-width: 95vw;
+      }
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 8px 5px;
+      }
+      .nav-links {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    }
   </style>
 </head>
 <body>
@@ -231,7 +271,9 @@
       <a href="/">Home</a>
       <a href="/cart">Cart</a>
       <a href="/orders">Orders</a>
-      <a href="#" id="logout-link">Logout</a>
+      <a href="/policy">Policy</a>
+      <a href="/#about">About</a>
+      <!-- <a href="#" id="logout-link">Logout</a> -->
     </div>
   </nav>
 
@@ -243,7 +285,7 @@
       <div id="cart-items"></div>
       <div class="total-section">
         <p>Subtotal: ₹<span id="subtotal-amount">0</span></p>
-        <p>Delivery: ₹<span id="delivery-charge">50</span></p>
+        <p>Delivery: ₹<span id="delivery-charge">79</span></p>
         <p><strong>Total: ₹<span id="total-amount">0</span></strong></p>
       </div>
     </div>
@@ -274,7 +316,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
       let subtotal = 0;
-      const deliveryCharge = 50;
+      const deliveryCharge = 79;
       const cartItemsContainer = document.getElementById('cart-items');
       const errorMessageElement = document.getElementById('error-message');
       const payButton = document.getElementById('pay-button');
@@ -326,34 +368,24 @@
           loadingElement.style.display = 'block';
           errorMessageElement.style.display = 'none';
 
-          // Check login before processing payment and fetching user data
-          const loginCheck = await fetch('/check-login').then(res => res.json());
-          if (!loginCheck.loggedIn) {
-            // Show login modal or redirect to login page
-            if (document.getElementById('loginModal')) {
-              document.getElementById('loginModal').style.display = 'flex';
-            } else {
-              window.location.href = '/login';
-            }
-            return;
+          const token = localStorage.getItem('token');
+          if (!token) {
+            throw new Error('Please login to continue');
           }
-
-          // 2. Fetch user data (session-based, no token needed)
-          const userResponse = await fetch('/api/users/profile-api');
-          if (!userResponse.ok) {
-            // handle not logged in
-            if (document.getElementById('loginModal')) {
-              document.getElementById('loginModal').style.display = 'flex';
-            } else {
-              window.location.href = '/login';
-            }
-            return;
-          }
-          const userData = await userResponse.json();
 
           const address = document.getElementById('address').value.trim();
           if (!address) {
             throw new Error("Please provide a delivery address.");
+          }
+
+          const userResponse = await fetch('/api/users/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!userResponse.ok) throw new Error('Failed to authenticate user');
+
+          const userData = await userResponse.json();
+          if (!userData.user || !userData.user._id) {
+            throw new Error('Invalid user data received');
           }
 
           // Add delivery charge to total amount for payment
@@ -361,7 +393,10 @@
 
           const transactionResponse = await fetch('/api/orders/transaction', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}` 
+            },
             body: JSON.stringify({ amount: totalAmount, userId: userData.user._id })
           });
           if (!transactionResponse.ok) {
@@ -386,7 +421,10 @@
 
                   const orderResponse = await fetch('/api/orders', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}` 
+                    },
                     body: JSON.stringify({
                       razorpayOrderId: razorpayResponse.razorpay_order_id,
                       razorpayPaymentId: razorpayResponse.razorpay_payment_id,

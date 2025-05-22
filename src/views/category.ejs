@@ -4,69 +4,227 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= categoryName %><% if (subCategoryName) { %> - <%= subCategoryName %><% } %> | Plant Store</title>
-  <link rel="stylesheet" href="/styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --primary-color: #4CAF50;
+      --secondary-color: #1976D2;
+      --accent-color: #FF9800;
+      --text-color: #222;
+      --bg-color: #f9f9f9;
+      --card-bg: #ffffff;
+    }
+
     body {
       font-family: 'Poppins', Arial, sans-serif;
-      background: #f9f9f9;
-      color: #222;
+      background: var(--bg-color);
+      color: var(--text-color);
       margin: 0;
       padding: 0;
       text-align: center;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    header, footer {
-      background:#4CAF50;
-      color: white;
-      padding: 15px;
-      text-align: center;
-    }
-    footer p {
-      margin: 0;
-      font-size: 0.95rem;
-    }
-    nav {
-      background: #388e3c;
-      color: #fff;
+
+    /* Navbar */
+    .navbar {
+      background: linear-gradient(90deg, var(--primary-color), #45a049);
+      padding: 1rem 2rem;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      height: 56px;
-      position: sticky;
-      top: 0;
-      z-index: 1001;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    .nav-logo img {
+      height: 36px;
+    }
+
     .nav-links {
       display: flex;
-      gap: 18px;
-      align-items: center;
+      gap: 1.5rem;
     }
+
     .nav-links a {
       color: #fff;
       text-decoration: none;
-      font-weight: 500;
-      padding: 8px 14px;
-      border-radius: 20px;
-      transition: background 0.3s, color 0.3s;
+      font-weight: 600;
       font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: background 0.3s, transform 0.2s;
     }
-    .nav-links a:hover {
-      background: rgba(255,255,255,0.18);
+
+    .nav-links a:hover,
+    .nav-links a:focus {
+      background: rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .nav-icons {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .search-bar {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      background: rgba(255, 255, 255, 0.1);
       color: #fff;
+      width: 200px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
     }
+
+    .search-bar:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+      outline: none;
+    }
+
+    .cart-icon-btn,
+    .profile-icon-btn,
+    .three-dots {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cart-icon,
+    .profile-icon {
+      width: 24px;
+      height: 24px;
+      filter: brightness(0) invert(1);
+      transition: transform 0.3s;
+    }
+
+    .cart-icon-btn:hover .cart-icon,
+    .profile-icon-btn:hover .profile-icon {
+      transform: scale(1.1);
+    }
+
     .three-dots {
       display: none;
       cursor: pointer;
       font-size: 2rem;
       color: #fff;
-      margin-left: 10px;
+      margin: 0;
       z-index: 1201;
       background: none;
       border: none;
+    }
+
+    /* Profile Dropdown */
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 1rem;
+      background: var(--card-bg);
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      min-width: 240px;
+      padding: 1rem;
+      z-index: 1300;
+    }
+
+    .profile-dropdown.show {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-dropdown p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .profile-dropdown button {
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin: 0.25rem 0;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .profile-dropdown button:hover {
+      background: #388e3c;
+      transform: translateY(-2px);
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
       position: relative;
     }
-    /* Category Bar */
+
+    .modal-content h3 {
+      margin-bottom: 1rem;
+      color: var(--text-color);
+    }
+
+    .modal-content button {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .modal-content button:hover {
+      background: #388e3c;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    /* Category Bar (Desktop) */
     .all-categories-bar {
       background: #fff;
       border-bottom: 1px solid #e0e0e0;
@@ -76,15 +234,17 @@
       justify-content: center;
       flex-wrap: wrap;
       position: sticky;
-      top: 56px;
+      top: 60px;
       z-index: 900;
     }
+
     .category-bar-item {
       position: relative;
       margin-right: 18px;
       margin-bottom: 8px;
       white-space: nowrap;
     }
+
     .category-bar-item a {
       color: #388e3c;
       text-decoration: none;
@@ -94,26 +254,31 @@
       transition: background 0.3s, color 0.3s;
       display: inline-block;
     }
+
     .category-bar-item a:hover {
-      background: rgba(56,142,60,0.1);
+      background: rgba(56, 142, 60, 0.1);
     }
+
     .subcategory-list {
       display: none;
       position: absolute;
       top: 100%;
-      left: 0;
+      left: 50%;
+      transform: translateX(-50%);
       background: #fff;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       padding: 10px;
       margin-top: 4px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       min-width: 150px;
       z-index: 1002;
     }
+
     .category-bar-item:hover .subcategory-list {
       display: block;
     }
+
     .subcategory-list a {
       color: #388e3c;
       padding: 6px 8px;
@@ -122,103 +287,130 @@
       transition: background 0.3s;
       font-size: 0.98rem;
     }
+
     .subcategory-list a:hover {
-      background: rgba(56,142,60,0.1);
+      background: rgba(56, 142, 60, 0.1);
     }
-    /* Hamburger Menu */
-    .category-dropdown {
+
+    /* Category Sidebar (Mobile) */
+    .category-sidebar {
       display: none;
+      flex-direction: column;
       position: fixed;
       top: 0;
-      right: -320px;
+      left: -100vw;
       width: 80vw;
       max-width: 320px;
       height: 100vh;
-      background: #176b2c;
+      background: linear-gradient(135deg, #176b2c, #45a049);
       color: #fff;
-      z-index: 1200;
-      box-shadow: -2px 0 16px rgba(0,0,0,0.18);
-      padding: 40px 20px 20px 20px;
-      transition: right 0.3s cubic-bezier(.4,0,.2,1);
+      z-index: 2000;
+      padding: 2rem 1.2rem 1.2rem 1.2rem;
       overflow-y: auto;
-      font-family: 'Poppins', Arial, sans-serif;
+      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .category-dropdown.show {
-      display: block;
-      right: 0;
+
+    .category-sidebar.show {
+      display: flex;
+      left: 0;
     }
-    .category-dropdown a,
-    .category-dropdown strong {
-      display: block;
-      color: #fff;
-      text-decoration: none;
-      font-size: 1.1rem;
-      margin: 18px 0 0 0;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .category-dropdown a {
-      font-weight: 400;
-      font-size: 1rem;
-      margin: 10px 0 0 18px;
-      color: #e0ffe0;
-      border-left: 2px solid #4caf50;
-      padding-left: 10px;
-      transition: color 0.2s;
-    }
-    .category-dropdown a:hover {
-      color: #4caf50;
-    }
-    .category-dropdown .close-btn {
+
+    .category-sidebar .close-btn {
       position: absolute;
-      top: 18px;
-      right: 18px;
+      top: 1rem;
+      right: 1rem;
       background: none;
       border: none;
       color: #fff;
       font-size: 2rem;
       cursor: pointer;
-      z-index: 1202;
     }
-    /* Responsive */
-    @media (max-width: 800px) {
-      .all-categories-bar {
-        display: none !important;
-      }
-      .three-dots {
-        display: block !important;
-        position: absolute;
-        right: 16px;
-        top: 14px;
-      }
-      .nav-links {
-        display: none !important;
-      }
+
+    .sidebar-category {
+      margin-bottom: 1.2rem;
     }
-    @media (min-width: 801px) {
-      .category-dropdown {
-        display: none !important;
-      }
-      .three-dots {
-        display: none !important;
-      }
-      .nav-links {
-        display: flex !important;
-      }
+
+    .sidebar-category > a {
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-decoration: none;
     }
+
+    .sidebar-subcategories {
+      margin: 0.5rem 0 0 1rem;
+      padding: 0;
+      list-style: disc;
+    }
+
+    .sidebar-subcategories li {
+      margin-bottom: 0.3rem;
+    }
+
+    .sidebar-subcategories a {
+      color: #e0ffe0;
+      font-size: 1rem;
+      text-decoration: none;
+    }
+
+    .sidebar-subcategories a:hover {
+      color: var(--accent-color);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      margin-top: 110px;
+      padding: 0 16px;
+    }
+
+    .category-header h1 {
+      font-size: 2rem;
+      color: #388e3c;
+      margin: 16px 0;
+    }
+
+    .category-header p {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .search-bar-wrap {
+      margin: 20px 0;
+    }
+
+    .search-bar-category {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-width: 400px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .search-bar-category:focus {
+      border-color: #388e3c;
+      box-shadow: 0 0 5px rgba(56, 142, 60, 0.3);
+      outline: none;
+    }
+
     /* Product Grid */
     .category-box {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-top: 20px;
+      gap: 24px;
+      margin-top: 24px;
       justify-content: center;
+      padding: 0 16px;
     }
+
     .product-item {
       background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 15px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 14px;
+      padding: 18px 12px 16px 12px;
       min-height: 340px;
       max-width: 260px;
       width: 100%;
@@ -227,124 +419,273 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 16px rgba(76, 175, 80, 0.10);
+      transition: transform 0.18s, box-shadow 0.18s;
     }
+
     .product-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 18px rgba(52,152,219,0.13);
+      transform: translateY(-4px) scale(1.025);
+      box-shadow: 0 8px 28px rgba(76, 175, 80, 0.18);
     }
+
     .product-item img {
       width: 100%;
-      height: 120px;
+      height: 130px;
       object-fit: cover;
-      border-radius: 8px;
-      background: #f9f9f9;
+      border-radius: 10px;
+      background: #f5f5f5;
+      margin-bottom: 10px;
     }
+
     .product-item p {
       margin: 10px 0 6px 0;
-      font-size: 1rem;
-      color: #3498db;
+      font-size: 1.05rem;
+      color: #388e3c;
       font-weight: 600;
     }
+
     .product-actions {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       justify-content: center;
-      margin-top: 8px;
+      margin-top: 10px;
       flex-wrap: wrap;
     }
-    .product-actions a {
+
+    .product-actions a,
+    .product-actions button {
       flex: 1 1 0;
       min-width: 0;
       box-sizing: border-box;
-      padding: 8px;
-      font-size: 0.95rem;
+      padding: 10px 0;
+      font-size: 1rem;
       text-align: center;
-      border-radius: 5px;
+      border-radius: 6px;
       text-decoration: none;
-      background: #3498db;
+      background: linear-gradient(90deg, #43a047 60%, #388e3c 100%);
       color: #fff;
-      transition: background 0.2s;
+      transition: background 0.2s, box-shadow 0.2s;
       width: 100%;
       max-width: 100%;
       margin: 0;
-      overflow: hidden;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(67, 160, 71, 0.10);
+      border: none;
+      outline: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
     }
-    .product-actions a:hover {
-      background: #217dbb;
+
+    .product-actions a:hover,
+    .product-actions button:hover {
+      background: linear-gradient(90deg, #2e7d32 60%, #43a047 100%);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(67, 160, 71, 0.18);
     }
-    @media (max-width: 900px) {
-      .category-box { grid-template-columns: repeat(3, 1fr); }
+
+    /* Footer */
+    footer {
+      background: var(--primary-color);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      margin-top: auto;
     }
-    @media (max-width: 600px) {
-      .category-box { grid-template-columns: repeat(2, 1fr); }
-      .product-item { max-width: 100%; }
-      .product-actions {
-        flex-direction: column;
-        gap: 6px;
-      }
-      .product-actions a {
-        width: 100%;
-        min-width: 0;
-        font-size: 0.9rem;
-        padding: 8px 0;
-        margin: 0;
-        max-width: 100%;
-      }
+
+    footer p {
+      margin: 0;
+      font-size: 0.95rem;
     }
+
+    /* No Products */
     .no-categories {
       text-align: center;
       margin: 40px 0;
       color: #777;
     }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .category-box {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .all-categories-bar {
+        display: none !important;
+      }
+      .three-dots {
+        display: block !important;
+      }
+      .nav-links {
+        display: none !important;
+      }
+      .category-box {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .product-item {
+        max-width: 100%;
+      }
+      .product-actions {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .product-actions a,
+      .product-actions button {
+        width: 100%;
+        font-size: 0.98rem;
+        padding: 10px 0;
+        margin: 0;
+        max-width: 100%;
+      }
+    }
+
+    @media (min-width: 801px) {
+      .three-dots,
+      .category-sidebar {
+        display: none !important;
+      }
+      .nav-links {
+        display: flex !important;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .category-box {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .product-item {
+        padding: 12px 6px 12px 6px;
+        min-height: 260px;
+      }
+      .product-item img {
+        height: 100px;
+      }
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+      .nav-logo img {
+        height: 30px;
+      }
+      .search-bar {
+        width: 150px;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <header>
-  
-    <!-- Desktop Category Bar -->
-    <div class="all-categories-bar">
-      <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
-        <% categories.forEach(category => { %>
-          <div class="category-bar-item">
-            <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>">
-              <span><%= category.name %></span>
-            </a>
-            <% if (category.subcategories && category.subcategories.length > 0) { %>
-              <div class="subcategory-list">
-                <% category.subcategories.forEach(sub => { %>
-                  <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&sub=<%= encodeURIComponent(sub.name) %>"><%= sub.name %></a>
-                <% }) %>
-              </div>
-            <% } %>
-          </div>
-        <% }) %>
-      <% } %>
-    </div>
-    <!-- Hamburger Menu (Mobile) -->
-    <div class="category-dropdown" id="categoryDropdown">
-      <button class="close-btn" onclick="toggleCategoryDropdown()">&times;</button>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <button class="three-dots" id="threeDotsBtn" aria-label="Open Categories" onclick="toggleCategorySidebar()">☰</button>
+    <a href="/" class="nav-logo">
+      <img src="/static/logo.png" alt="Plant Store Logo" loading="lazy" />
+    </a>
+    <div class="nav-links">
       <a href="/">Home</a>
-      <a href="https://www.homegardennet.com/?m=1" target="_blank">Blog</a>
+      <a href="https://www.homegardennet.com/?m=1" target="_blank" rel="noopener">Blog</a>
       <a href="/#about">About</a>
       <a href="/policy">Policy</a>
       <a href="/cart">Cart</a>
-      <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
-        <% categories.forEach(category => { %>
-          <strong><%= category.name %></strong>
-          <% if (category.subcategories && category.subcategories.length > 0) { %>
-            <% category.subcategories.forEach(sub => { %>
-              <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&sub=<%= encodeURIComponent(sub.name) %>">
-                &nbsp;&nbsp;• <%= sub.name %>
-              </a>
-            <% }) %>
-          <% } %>
-        <% }) %>
-      <% } %>
     </div>
-  </header>
+    <div class="nav-icons">
+      <input
+        type="text"
+        placeholder="Search products..."
+        class="search-bar"
+        onkeyup="searchProducts(this.value)"
+        aria-label="Search products"
+      />
+      <button class="profile-icon-btn" onclick="toggleProfile()" aria-label="Toggle Profile">
+        <img src="/static/profile-icon.png" alt="Profile" class="profile-icon" loading="lazy" />
+      </button>
+    </div>
+  </nav>
+
+  <!-- Profile Dropdown / Login Modal -->
+  <% if (user) { %>
+    <div class="profile-dropdown" id="profileDropdown">
+      <p><strong>Name:</strong> <%= user.name || 'Not provided' %></p>
+      <p><strong>Email:</strong> <%= user.email %></p>
+      <p><strong>Phone:</strong> <%= user.phone || 'Not provided' %></p>
+      <p><strong>Address:</strong> <%= user.address || 'Not provided' %></p>
+      <button onclick="window.location.href='/orders'">My Orders</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  <% } else { %>
+    <div class="modal" id="loginModal">
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()" aria-label="Close modal">×</button>
+        <h3>Please log in or register to proceed</h3>
+        <button onclick="window.location.href='/login'">Login</button>
+        <button onclick="window.location.href='/register'">Register</button>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Category Bar (Desktop) -->
+  <div class="all-categories-bar">
+    <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
+      <% categories.forEach(category => { %>
+        <div class="category-bar-item">
+          <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>">
+            <span><%= category.name %></span>
+          </a>
+          <% if (category.subcategories && category.subcategories.length > 0) { %>
+            <div class="subcategory-list">
+              <% category.subcategories.forEach(sub => { %>
+                <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&sub=<%= encodeURIComponent(sub.name ? sub.name : sub) %>">
+                  <%= sub.name ? sub.name : sub %>
+                </a>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <!-- Category Sidebar (Mobile) -->
+  <div class="category-sidebar" id="categorySidebar">
+    <button class="close-btn" onclick="toggleCategorySidebar()" aria-label="Close Categories">×</button>
+    <h3 style="margin-bottom:1rem;">Menu</h3>
+    <div class="sidebar-category">
+      <a href="/"><strong>Home</strong></a>
+    </div>
+    <div class="sidebar-category">
+      <a href="https://www.homegardennet.com/?m=1" target="_blank" rel="noopener"><strong>Blog</strong></a>
+    </div>
+    <div class="sidebar-category">
+      <a href="/#about"><strong>About</strong></a>
+    </div>
+    <div class="sidebar-category">
+      <a href="/policy"><strong>Policy</strong></a>
+    </div>
+    <div class="sidebar-category">
+      <a href="/cart"><strong>Cart</strong></a>
+    </div>
+    <hr style="margin: 1rem 0; border: none; border-top: 1px solid #fff; opacity: 0.2;">
+    <% if (typeof categories !== 'undefined' && categories && categories.length) { %>
+      <% categories.forEach(category => { %>
+        <div class="sidebar-category">
+          <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>">
+            <strong><%= category.name %></strong>
+          </a>
+          <% if (category.subcategories && category.subcategories.length > 0) { %>
+            <ul class="sidebar-subcategories">
+              <% category.subcategories.forEach(sub => { %>
+                <li>
+                  <a href="/api/products/products?category=<%= encodeURIComponent(category.name) %>&subcategory=<%= encodeURIComponent(sub.name ? sub.name : sub) %>">
+                    <%= sub.name ? sub.name : sub %>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
 
   <main>
     <section class="category-header">
@@ -373,39 +714,53 @@
       <div class="category-box" id="categoryProductGrid">
         <% products.forEach(product => { %>
           <div class="product-item" data-name="<%= product.name.toLowerCase() %>">
-            <img src="<%= (product.images && product.images[0]) ? product.images[0] : '/images/default-image.jpg' %>" alt="<%= product.name %>" />
-            <p><strong><%= product.name %></strong></p>
+            <a href="/api/products/productdetails?id=<%= product._id %>">
+              <img src="<%= (product.images && product.images[0]) ? product.images[0] : '/images/default-image.jpg' %>" alt="<%= product.name %>" loading="lazy" />
+            </a>
             <p>₹<%= product.price.toFixed(2) %></p>
+            <p><%= product.name %></p>
             <div class="product-actions">
               <a href="/api/products/productdetails?id=<%= product._id %>">View Details</a>
-              <!-- <a href="javascript:void(0)" onclick="addToCart('<%= product._id %>', '<%= product.name.replace(/'/g, "\\'") %>', '<%= product.price %>', '<%= (product.images && product.images[0]) ? product.images[0] : '' %>', '<%= (product.description || '').replace(/'/g, "\\'") %>')">Add to Cart</a> -->
+              <% if (user) { %>
+                <button
+                  type="button"
+                  class="add-to-cart-btn"
+                  data-product-id="<%= product._id %>"
+                  data-product-name="<%= product.name.replace(/"/g, '&quot;') %>"
+                  data-product-price="<%= product.price %>"
+                  data-product-image="<%= (product.images && product.images[0]) ? product.images[0] : '' %>"
+                  data-product-description="<%= (product.description || '').replace(/"/g, '&quot;') %>"
+                  onclick="addToCartHandler(this)"
+                >
+                  Add to Cart
+                </button>
+              <% } else { %>
+                <button type="button" class="add-to-cart-btn" onclick="showLoginModal()">Add to Cart</button>
+              <% } %>
             </div>
           </div>
         <% }) %>
       </div>
     <% } else { %>
       <div class="no-categories">
-        <h2>No Products Found</h2>
-        <p>There are no products in this <%= subCategoryName ? 'subcategory' : 'category' %> yet.</p>
+        <p>No products found in this category.</p>
       </div>
     <% } %>
   </main>
 
   <footer>
-    <p>&copy; <%= new Date().getFullYear() %> Plant Store. All rights reserved.</p>
+    <p>© <%= new Date().getFullYear() %> Plant Store. All rights reserved.</p>
   </footer>
 
   <script>
-    function toggleCategoryDropdown() {
-      const dropdown = document.getElementById('categoryDropdown');
-      dropdown.classList.toggle('show');
+    function searchProducts(searchTerm) {
+      searchTerm = searchTerm.trim().toLowerCase();
+      const products = document.querySelectorAll('#categoryProductGrid .product-item');
+      products.forEach(product => {
+        const name = product.getAttribute('data-name');
+        product.style.display = name.includes(searchTerm) ? '' : 'none';
+      });
     }
-    window.addEventListener('click', function(e) {
-      const dropdown = document.getElementById('categoryDropdown');
-      if (dropdown && dropdown.classList.contains('show') && !dropdown.contains(e.target) && !e.target.classList.contains('three-dots')) {
-        dropdown.classList.remove('show');
-      }
-    });
 
     function filterCategoryProducts() {
       const search = document.getElementById('categorySearch').value.toLowerCase();
@@ -415,29 +770,118 @@
       });
     }
 
-    function addToCart(productId, productName, productPrice, productImage, productDescription) {
-      if (!localStorage.getItem('token')) {
-        alert('Please log in to add to cart.');
-        return;
-      }
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const existing = cart.find(item => item.id === productId);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({
-          id: productId,
-          name: productName,
-          price: parseFloat(productPrice),
-          image: productImage || '/images/default-image.jpg',
-          description: productDescription,
-          quantity: 1
-        });
-      }
-      localStorage.setItem('cart', JSON.stringify(cart));
-      alert('Product added to cart!');
+    function showLoginModal() {
+      document.getElementById('loginModal').style.display = 'flex';
     }
-  </script>
 
+    function isUserLoggedIn() {
+      return localStorage.getItem('token') !== null;
+    }
+
+    function checkLoginBeforeAction(actionCallback) {
+      fetch('/check-login')
+        .then(res => res.json())
+        .then(data => {
+          if (data.loggedIn) {
+            actionCallback();
+          } else {
+            document.getElementById('loginModal').style.display = 'flex';
+          }
+        })
+        .catch(error => {
+          document.getElementById('loginModal').style.display = 'flex';
+        });
+    }
+
+    function addToCartHandler(button) {
+      const productId = button.getAttribute('data-product-id');
+      const productName = button.getAttribute('data-product-name');
+      const productPrice = button.getAttribute('data-product-price');
+      const productImage = button.getAttribute('data-product-image');
+      const productDescription = button.getAttribute('data-product-description');
+      
+      addToCart(productId, productName, productPrice, productImage, productDescription);
+    }
+
+    function addToCart(productId, productName, productPrice, productImage, productDescription) {
+      checkLoginBeforeAction(() => {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existing = cart.find(item => item.id === productId);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cart.push({
+            id: productId,
+            name: productName,
+            price: parseFloat(productPrice),
+            image: productImage || '/images/default-image.jpg',
+            description: productDescription,
+            quantity: 1
+          });
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        alert('Product added to cart!');
+      });
+    }
+
+    // Sidebar/profile/modal logic
+    function toggleCategorySidebar() {
+      const sidebar = document.getElementById('categorySidebar');
+      sidebar.classList.toggle('show');
+      if (sidebar.classList.contains('show')) {
+        document.body.classList.add('body-no-scroll');
+      } else {
+        document.body.classList.remove('body-no-scroll');
+      }
+    }
+
+    let profileVisible = false;
+    function toggleProfile() {
+      const dropdown = document.getElementById('profileDropdown');
+      const modal = document.getElementById('loginModal');
+      if (dropdown) {
+        profileVisible = !profileVisible;
+        dropdown.classList.toggle('show', profileVisible);
+      } else if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('cart');
+      profileVisible = false;
+      const dropdown = document.getElementById('profileDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+      fetch('/api/users/logout', { method: 'POST', credentials: 'include' })
+        .then(() => {
+          window.location.href = '/login';
+        })
+        .catch(() => {
+          window.location.href = '/login';
+        });
+    }
+
+    function closeModal() {
+      document.getElementById('loginModal').style.display = 'none';
+    }
+
+    window.addEventListener('click', function(e) {
+      const sidebar = document.getElementById('categorySidebar');
+      if (sidebar && sidebar.classList.contains('show') && !sidebar.contains(e.target) && !e.target.closest('.three-dots')) {
+        sidebar.classList.remove('show');
+        document.body.classList.remove('body-no-scroll');
+      }
+      const dropdown = document.getElementById('profileDropdown');
+      if (dropdown && dropdown.classList.contains('show') && !dropdown.contains(e.target) && !e.target.closest('.profile-icon-btn')) {
+        dropdown.classList.remove('show');
+        profileVisible = false;
+      }
+      const modal = document.getElementById('loginModal');
+      if (modal && modal.style.display === 'flex' && !modal.querySelector('.modal-content').contains(e.target)) {
+        modal.style.display = 'none';
+      }
+    });
+  </script>
 </body>
-</html>
+</html
