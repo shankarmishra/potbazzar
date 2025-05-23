@@ -740,21 +740,64 @@
 
     /* Modal */
     .modal {
-      display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+      display: none;
+      position: fixed;
+      z-index: 2001;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.45);
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.3s;
     }
-
-    .modal.show {
-      opacity: 1;
-      pointer-events: auto;
+    .modal.show, .modal[style*="flex"] {
+      display: flex !important;
     }
-
     .modal-content {
-      background: #fff; padding: 2rem; border-radius: 10px; text-align: center; position: relative;
+      background: #fff;
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+      border-radius: 12px;
+      min-width: 260px;
+      max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+      text-align: center;
+      position: relative;
+      animation: fadeIn 0.3s;
     }
-
     .close-btn {
-      position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;
+      position: absolute;
+      top: 0.5rem; right: 0.5rem;
+      background: none; border: none;
+      font-size: 1.7rem; color: #888;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close-btn:hover { color: #d32f2f; }
+    .modal-content h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+    }
+    .modal-content button {
+      margin: 0.5rem 0.5rem 0 0.5rem;
+      padding: 0.6rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .modal-content button:hover {
+      background: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
     }
 
     /* Responsive */
@@ -1290,59 +1333,65 @@ function closeLoginModal() {
       errorDiv.style.display = 'none';
       errorDiv.textContent = '';
 
-      if (!localStorage.getItem('token')) {
-        window.location.href = '/login';
-        return;
-      }
+      // Use your /check-login endpoint to check login status
+      fetch('/check-login')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.loggedIn) {
+            document.getElementById('loginModal').style.display = 'flex';
+            return;
+          }
 
-      const productId = this.productId.value;
-      const title = this.title.value.trim();
-      const text = this.text.value.trim();
-      const rating = this.rating.value;
-      if (!title || !text || !rating) {
-        errorDiv.textContent = "All fields are required.";
-        errorDiv.style.display = 'block';
-        return;
-      }
-      if (text.length < 10) {
-        errorDiv.textContent = "Review text must be at least 10 characters.";
-        errorDiv.style.display = 'block';
-        return;
-      }
+          // If logged in, proceed with review submission
+          const productId = this.productId.value;
+          const title = this.title.value.trim();
+          const text = this.text.value.trim();
+          const rating = this.rating.value;
+          if (!title || !text || !rating) {
+            errorDiv.textContent = "All fields are required.";
+            errorDiv.style.display = 'block';
+            return;
+          }
+          if (text.length < 10) {
+            errorDiv.textContent = "Review text must be at least 10 characters.";
+            errorDiv.style.display = 'block';
+            return;
+          }
 
-      fetch('/api/products/submit-review', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
-        },
-        body: JSON.stringify({
-          productId,
-          title,
-          text,
-          rating
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const popup = document.getElementById('reviewSuccessPopup');
-          popup.classList.add('show');
-          setTimeout(() => {
-            popup.classList.remove('show');
-            this.reset();
-            window.location.reload();
-          }, 2000);
-        } else {
-          errorDiv.textContent = data.message || 'Failed to submit review.';
-          errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        errorDiv.textContent = 'Server error, please try again.';
-        errorDiv.style.display = 'block';
-      });
+          fetch('/api/products/submit-review', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
+            },
+            body: JSON.stringify({
+              productId,
+              title,
+              text,
+              rating
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const popup = document.getElementById('reviewSuccessPopup');
+              popup.classList.add('show');
+              setTimeout(() => {
+                popup.classList.remove('show');
+                this.reset();
+                window.location.reload();
+              }, 2000);
+            } else {
+              errorDiv.textContent = data.message || 'Failed to submit review.';
+              errorDiv.style.display = 'block';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            errorDiv.textContent = 'Server error, please try again.';
+            errorDiv.style.display = 'block';
+          });
+        });
     });
 
     // Sidebar toggle for mobile
